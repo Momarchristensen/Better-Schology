@@ -53,7 +53,7 @@ python server.py
 
 Open [http://localhost:3498](http://localhost:3498) in a browser.
 
-The server uses an HTTP-only session cookie for the authenticated session. Generated downloaded-file data is stored in `cached_files/` and is ignored by Git.
+The server uses an HTTP-only session cookie for the authenticated session. Generated downloaded-file data is stored in `cached_files/` and is ignored by Git. When running from Python, that directory is beside `server.py`. The packaged Windows executable stores it in `%TEMP%\Better-Schology\cached_files` so it is separate from the executable and persists between normal runs. Windows may remove files from its temporary directory during cleanup.
 
 ## Lint
 
@@ -70,7 +70,7 @@ npm run lint:css
 - `get_token.py` - authentication/session-token handling
 - `HTML/` - frontend pages and static assets
 - `libreoffice/` - bundled runtime used for presentation conversion
-- `cached_files/` - generated local file cache
+- `cached_files/` - generated local file cache for Python runs; packaged executable caches use `%TEMP%\Better-Schology\cached_files`
 
 ## Project Name Ideas
 

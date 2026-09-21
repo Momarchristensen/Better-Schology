@@ -45,9 +45,9 @@ from get_token import get_session_token
 
 if getattr(sys, "frozen", False):
     # PyInstaller extracts bundled read-only assets into _MEIPASS. Keep
-    # generated files beside the executable so they persist between runs.
+    # the cache outside the extracted bundle so it persists between runs.
     resource_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
-    data_dir = Path(sys.executable).resolve().parent
+    data_dir = Path(tempfile.gettempdir()) / "Better-Schology"
 else:
     resource_dir = Path(__file__).resolve().parent
     data_dir = resource_dir
