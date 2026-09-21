@@ -1,0 +1,796 @@
+import json
+import hashlib
+import re
+from pathlib import Path
+from typing import Optional
+import httpx
+import uvicorn
+from fastapi import FastAPI, Request, Response, HTTPException
+from fastapi.responses import (
+    HTMLResponse,
+    RedirectResponse,
+    FileResponse,
+    StreamingResponse,
+    Response as FastAPIResponse,
+)
+from fastapi.concurrency import run_in_threadpool
+import os
+from urllib.parse import quote, urlparse, unquote_plus
+from starlette.background import BackgroundTask
+import io
+import mammoth
+import sys
+import tempfile
+import subprocess
+
+from api_utils import (
+    base_url,
+    get_assignment_location,
+    get_draft_text,
+    get_parent_structure,
+    get_search_list,
+    get_section_materials,
+    get_material,
+    get_upcoming_materials,
+    get_sections,
+    get_overdue_materials,
+    delete_draft,
+    save_draft,
+    submit_assignment,
+    submit_assignment_files,
+    get_section,
+)
+from error_classes import AccountNotFound, InvalidCredentials
+from get_token import get_session_token
+
+if getattr(sys, "frozen", False):
+    script_dir = Path(sys.executable).resolve().parent
+else:
+    script_dir = Path(__file__).resolve().parent
+
+SOFFICE_PATH = script_dir / "libreoffice" / "program" / "soffice.exe"
+
+html_dir = script_dir / "HTML"
+html_dir.mkdir(parents=True, exist_ok=True)
+
+RESOURCES_DIR = html_dir / "resources"
+RESOURCES_DIR.mkdir(parents=True, exist_ok=True)
+
+CACHE_DIR = script_dir / "cached_files"
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+PORT = 3498
+
+app = FastAPI()
+
+DOCX_HTML_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{title}</title>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 30px;
+            line-height: 1.6;
+        }}
+
+        img {{
+            max-width: 100%;
+        }}
+
+        table {{
+            border-collapse: collapse;
+            width: 100%;
+        }}
+
+        td, th {{
+            border: 1px solid #ccc;
+            padding: 8px;
+        }}
+    </style>
+</head>
+<body>
+    {body}
+</body>
+</html>
+"""
+
+
+def parse_session_cookie(cookie_value: Optional[str]):
+    if not cookie_value:
+        return None
+    try:
+        return json.loads(cookie_value)
+    except json.JSONDecodeError:
+        return None
+
+
+async def session_token_is_valid(session_token):
+    if not session_token:
+        return False
+    async with httpx.AsyncClient(
+        http2=True, verify=True, follow_redirects=True, headers={}, trust_env=False
+    ) as client:
+        client.cookies.update(session_token)
+        resp = await client.get(base_url)
+        return str(resp.url).startswith(base_url)
+
+
+def serve_html_file(filename: str):
+    file_path = html_dir / filename
+    if file_path.exists():
+        with open(file_path, "rb") as f:
+            return HTMLResponse(content=f.read(), status_code=200)
+    raise HTTPException(status_code=404, detail="File not found")
+
+
+def login_redirect_url(request: Request) -> str:
+    return_path = request.url.path
+    if request.url.query:
+        return_path += f"?{request.url.query}"
+    return f"/login?next={quote(return_path, safe='')}"
+
+
+def safe_next_path(next_path: Optional[str]) -> str:
+    if next_path and next_path.startswith("/") and not next_path.startswith("//"):
+        return next_path
+    return "/home"
+
+
+@app.post("/api/get_token")
+async def api_get_token(request: Request, response: Response):
+    data = await request.json()
+    email = data.get("email")
+    password = data.get("password")
+    try:
+        token = await run_in_threadpool(get_session_token, email, password)
+        response.set_cookie(
+            "sessionToken",
+            json.dumps(token),
+            max_age=86400,
+            path="/",
+            httponly=True,
+            samesite="lax",
+        )
+        return {"status": "ok"}
+    except AccountNotFound:
+        return {"status": "error", "message": "Account not found (invalid email)"}
+    except InvalidCredentials:
+        return {"status": "error", "message": "Invalid password"}
+    except json.JSONDecodeError:
+        return {"status": "error", "message": "Invalid JSON"}
+
+
+@app.post("/api/logout")
+async def api_logout(response: Response):
+    response.delete_cookie(
+        key="sessionToken",
+        path="/",
+        samesite="lax",
+    )
+
+    return {"status": "ok"}
+
+def extract_filename(url: str, headers: dict | None = None) -> str:
+    """Pull a filename from Content-Disposition, falling back to the URL path.
+
+    Uses regex (stopping at ';') instead of naive string splitting, since a
+    naive split on 'filename=' can drag trailing Content-Disposition
+    parameters (e.g. `filename="slides.ppt"; size=123`) into the filename and
+    break extension checks downstream.
+    """
+    if headers and "content-disposition" in headers:
+        cd = headers["content-disposition"]
+
+        m = re.search(r"filename\*=(?:UTF-8'')?([^;]+)", cd, re.IGNORECASE)
+        if m:
+            return unquote_plus(m.group(1).strip().strip('"'))
+
+        m = re.search(r'filename="([^"]+)"', cd, re.IGNORECASE)
+        if not m:
+            m = re.search(r"filename=([^;]+)", cd, re.IGNORECASE)
+        if m:
+            return unquote_plus(m.group(1).strip().strip('"'))
+
+    path = urlparse(url).path
+    filename = os.path.basename(path)
+
+    return unquote_plus(filename) or "file"
+
+
+def get_cache_key(url: str) -> str:
+    """Stable cache key derived from the source URL."""
+    return hashlib.sha256(url.encode("utf-8")).hexdigest()
+
+
+def cache_paths(cache_key: str):
+    data_path = CACHE_DIR / cache_key
+    meta_path = CACHE_DIR / f"{cache_key}.meta.json"
+    return data_path, meta_path
+
+
+def read_cache(cache_key: str) -> Optional[dict]:
+    """Return cache metadata dict if both the data file and metadata exist, else None."""
+    data_path, meta_path = cache_paths(cache_key)
+    if not (data_path.exists() and meta_path.exists()):
+        return None
+    try:
+        meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    except Exception:
+        return None
+    meta["data_path"] = data_path
+    return meta
+
+
+def write_cache(
+    cache_key: str, content: bytes, filename: str, media_type: str, kind: str
+):
+    data_path, meta_path = cache_paths(cache_key)
+    data_path.write_bytes(content)
+    meta_path.write_text(
+        json.dumps({"filename": filename, "media_type": media_type, "kind": kind}),
+        encoding="utf-8",
+    )
+
+
+def serve_cached(meta: dict):
+    """Build a response from cached file metadata."""
+    data_path: Path = meta["data_path"]
+    kind = meta.get("kind", "raw")
+    filename = meta.get("filename", data_path.name)
+    media_type = meta.get("media_type", "application/octet-stream")
+
+    if kind == "html":
+        return HTMLResponse(content=data_path.read_bytes(), media_type="text/html")
+
+    return FileResponse(
+        data_path,
+        media_type=media_type,
+        filename=filename,
+        content_disposition_type="inline",
+    )
+
+
+def convert_docx_to_html(docx_bytes: bytes, _ext: str) -> bytes:
+    """Convert DOCX bytes to a standalone styled HTML document."""
+    result = mammoth.convert_to_html(io.BytesIO(docx_bytes))
+    html = DOCX_HTML_TEMPLATE.format(title="document", body=result.value)
+    return html.encode("utf-8")
+
+
+def convert_ppt_to_pdf(ppt_bytes: bytes, extension: str = ".pptx") -> bytes:
+    print(ppt_bytes, extension)
+    """Convert PowerPoint (.ppt or .pptx) bytes to PDF."""
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        ppt_path = os.path.join(tmp_dir, f"slides{extension}")
+
+        with open(ppt_path, "wb") as f:
+            f.write(ppt_bytes)
+
+        # Give each conversion its own LibreOffice profile dir. Sharing the
+        # default profile across concurrent/back-to-back conversions can
+        # cause silent failures due to profile-lock contention.
+        profile_dir = Path(tmp_dir) / "profile"
+
+        result = subprocess.run(
+            [
+                str(SOFFICE_PATH),
+                "--headless",
+                "--norestore",
+                f"-env:UserInstallation=file:///{profile_dir.as_posix()}",
+                "--convert-to",
+                "pdf",
+                "--outdir",
+                tmp_dir,
+                ppt_path,
+            ],
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+
+        if result.returncode != 0:
+            raise Exception(f"PowerPoint -> PDF conversion failed: {result.stderr}")
+
+        pdf_path = os.path.join(tmp_dir, "slides.pdf")
+
+        if not os.path.exists(pdf_path):
+            raise Exception("Expected converted PDF not found")
+
+        with open(pdf_path, "rb") as f:
+            return f.read()
+
+
+CONVERTERS = {
+    ".docx": {
+        "convert": convert_docx_to_html,
+        "kind": "html",
+        "media_type": "text/html",
+        "out_ext": ".html",
+    },
+    ".ppt": {
+        "convert": convert_ppt_to_pdf,
+        "kind": "pdf",
+        "media_type": "application/pdf",
+        "out_ext": ".pdf",
+    },
+    ".pptx": {
+        "convert": convert_ppt_to_pdf,
+        "kind": "pdf",
+        "media_type": "application/pdf",
+        "out_ext": ".pdf",
+    },
+}
+
+
+@app.get("/api/search_list")
+async def api_search_list(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+
+    if not token:
+        raise HTTPException(status_code=401, detail="No session token")
+
+    return await get_search_list(token)
+
+
+@app.get("/api/file")
+async def api_file(url: str, request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+
+    if not token:
+        raise HTTPException(status_code=401, detail="No session token")
+
+    cache_key = get_cache_key(url)
+
+    cached_meta = read_cache(cache_key)
+    if cached_meta:
+        return serve_cached(cached_meta)
+
+    client = httpx.AsyncClient(
+        http2=True, verify=False, follow_redirects=True, trust_env=False
+    )
+    client.cookies.update(token)
+
+    range_header = request.headers.get("range")
+    request_headers = {"Range": range_header} if range_header else {}
+
+    req = client.build_request("GET", url, headers=request_headers)
+    r = await client.send(req, stream=True)
+
+    if r.status_code not in (200, 206):
+        await r.aclose()
+        await client.aclose()
+        raise HTTPException(status_code=400, detail="Failed to fetch file")
+
+    filename = extract_filename(url, r.headers)
+    ext = os.path.splitext(filename)[1].lower()
+    converter = CONVERTERS.get(ext)
+
+    if converter:
+        try:
+            raw_bytes = await r.aread()
+            await r.aclose()
+            converted = await run_in_threadpool(converter["convert"], raw_bytes, ext)
+        except Exception as exc:
+            await client.aclose()
+            raise HTTPException(
+                status_code=500, detail=f"Failed to convert {ext}: {exc}"
+            )
+
+        await client.aclose()
+
+        out_filename = os.path.splitext(filename)[0] + converter["out_ext"]
+        write_cache(
+            cache_key,
+            converted,
+            filename=out_filename,
+            media_type=converter["media_type"],
+            kind=converter["kind"],
+        )
+
+        if converter["kind"] == "html":
+            return HTMLResponse(content=converted, media_type="text/html")
+
+        return FastAPIResponse(
+            content=converted,
+            media_type=converter["media_type"],
+            headers={"Content-Disposition": f'inline; filename="{out_filename}"'},
+        )
+
+
+    if not range_header:
+        try:
+            raw_bytes = await r.aread()
+        except Exception as exc:
+            await r.aclose()
+            await client.aclose()
+            raise HTTPException(status_code=500, detail=f"Failed to read file: {exc}")
+
+        await r.aclose()
+        await client.aclose()
+
+        media_type = r.headers.get("content-type", "application/octet-stream")
+
+        write_cache(
+            cache_key,
+            raw_bytes,
+            filename=filename,
+            media_type=media_type,
+            kind="raw",
+        )
+
+        return FastAPIResponse(
+            content=raw_bytes,
+            media_type=media_type,
+            headers={"Content-Disposition": f'inline; filename="{filename}"'},
+        )
+
+    response_headers = {"Content-Disposition": f'inline; filename="{filename}"'}
+
+    for header in (
+        "content-length",
+        "content-range",
+        "accept-ranges",
+        "etag",
+        "last-modified",
+    ):
+        if header in r.headers:
+            response_headers[header] = r.headers[header]
+
+    async def cleanup():
+        await r.aclose()
+        await client.aclose()
+
+    return StreamingResponse(
+        r.aiter_bytes(),
+        status_code=r.status_code,
+        media_type=r.headers.get("content-type", "application/octet-stream"),
+        headers=response_headers,
+        background=BackgroundTask(cleanup),
+    )
+
+
+@app.get("/api/courses")
+async def api_courses(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+    courses = await get_sections(token)
+    return {"status": "ok", "courses": courses}
+
+
+@app.get("/api/section_details/{section_id}")
+async def api_section_details(request: Request, section_id: str):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    section = await get_section(token, section_id)
+
+    return {"status": "ok", "section": section}
+
+
+@app.get("/api/section/{full_path:path}")
+async def api_section(full_path: str, request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    parts = list(filter(None, full_path.strip("/").split("/")))
+    section_id = parts[0] if parts else None
+    if not section_id:
+        return {"status": "error", "message": "Invalid API path"}
+
+    folder_id = None
+    if len(parts) >= 2 and parts[1] == "folder":
+        folder_id = parts[2] if len(parts) >= 3 else None
+        if folder_id == "root":
+            folder_id = None
+
+    if "material" in parts:
+        try:
+            mat_index = parts.index("material")
+            material_id = parts[mat_index + 1]
+        except Exception:
+            material_id = None
+        if not material_id:
+            return {"status": "error", "message": "Material not found"}
+
+        material_json = await get_material(token, section_id, folder_id, material_id)
+        return {"status": "ok", "material": material_json}
+
+    materials = await get_section_materials(token, section_id, folder_id)
+    if not materials:
+        return {"status": "error", "message": "Course not found"}
+
+    return {"status": "ok", "materials": materials}
+
+
+@app.get("/api/parent_structure")
+async def api_parent_structure(request: Request, section_id: str, folder_id: str):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    structure = await get_parent_structure(token, section_id, folder_id)
+    return {"status": "ok", "structure": structure}
+
+
+@app.get("/api/overdue")
+async def api_overdue(request: Request, section_id: Optional[str] = None):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    overdue_materials = await get_overdue_materials(token, section_id)
+    return {"status": "ok", "materials": overdue_materials}
+
+
+@app.get("/api/upcoming")
+async def api_upcoming(request: Request, section_id: Optional[str] = None):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    upcoming_materials = await get_upcoming_materials(token, section_id)
+    return {"status": "ok", "materials": upcoming_materials}
+
+
+@app.post("/submit_assignment")
+async def api_submit_assignment(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    form = await request.form()
+
+    assignment_id = form.get("assignment_id")
+    if not assignment_id:
+        return {"status": "error", "message": "Missing assignment_id"}
+
+    draft_revision_id = form.get("draft_revision_id") or None
+    html = form.get("html")
+    comment = form.get("comment") or ""
+    uploads = form.getlist("files")
+
+    has_html = bool(html and html.strip())
+    has_files = any(getattr(upload, "filename", None) for upload in uploads)
+
+    if not has_html and not has_files:
+        return {"status": "error", "message": "Nothing to submit"}
+
+    if has_html and has_files:
+        return {
+            "status": "error",
+            "message": "Submit either written text or files, not both",
+        }
+
+    try:
+        if has_html:
+            resp = await submit_assignment(token, assignment_id, html)
+            if resp.status_code >= 400:
+                return {
+                    "status": "error",
+                    "message": f"Text submission failed ({resp.status_code})",
+                }
+            return {"status": "ok", "results": {"text_submission": "ok"}}
+
+        file_payloads = []
+        for upload in uploads:
+            filename = getattr(upload, "filename", None)
+            if not filename:
+                continue
+            content = await upload.read()
+            if not content:
+                continue
+            file_payloads.append({"file_name": filename, "file_content": content})
+
+        if not file_payloads:
+            return {"status": "error", "message": "Nothing to submit"}
+
+        # Schoology hides the upload form while a draft exists. If the
+        # client tells us there's a draft in play, snapshot its text and
+        # clear it before attempting the upload. On any failure, restore
+        # the draft so nothing the user typed is lost.
+        saved_draft_text = None
+        if draft_revision_id:
+            try:
+                saved_draft_text = await get_draft_text(token, assignment_id)
+            except Exception:
+                saved_draft_text = None
+
+            try:
+                await delete_draft(token, assignment_id, draft_revision_id)
+            except Exception as exc:
+                return {
+                    "status": "error",
+                    "message": f"Could not clear existing draft before uploading: {exc}",
+                }
+
+        try:
+            resp = await submit_assignment_files(
+                token, assignment_id, file_payloads, comment=comment
+            )
+            if resp.status_code >= 400:
+                raise RuntimeError(f"File submission failed ({resp.status_code})")
+        except Exception as exc:
+            if draft_revision_id and saved_draft_text is not None:
+                try:
+                    await save_draft(token, assignment_id, saved_draft_text)
+                except Exception:
+                    pass
+            return {"status": "error", "message": f"Submission failed: {exc}"}
+
+        return {"status": "ok", "results": {"file_submission": "ok"}}
+    except Exception as exc:
+        return {"status": "error", "message": f"Submission failed: {exc}"}
+
+
+@app.post("/save_draft")
+async def api_save_draft(request: Request):
+    """
+    Persist a draft of the in-progress text submission.
+
+    Called from material.html when the "Add Submission" modal is closed via
+    the X button, or via navigator.sendBeacon on page unload, so unsaved
+    writing isn't lost. Drafts only apply to the written/HTML submission
+    path - there's no equivalent "draft" concept for file uploads.
+    """
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    form = await request.form()
+
+    assignment_id = form.get("assignment_id")
+    html = form.get("html")
+
+    if not assignment_id or not (html and html.strip()):
+        return {"status": "error", "message": "Nothing to save"}
+
+    try:
+        resp = await save_draft(token, assignment_id, html)
+        if resp.status_code >= 400:
+            return {
+                "status": "error",
+                "message": f"Draft save failed ({resp.status_code})",
+            }
+    except Exception as exc:
+        return {"status": "error", "message": f"Draft save failed: {exc}"}
+
+    return {"status": "ok"}
+
+
+@app.post("/delete_draft")
+async def api_delete_draft(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not token:
+        return {"status": "error", "message": "No session token"}
+
+    form = await request.form()
+    assignment_id = form.get("assignment_id")
+    revision_id = form.get("revision_id")
+
+    if not assignment_id or not revision_id:
+        return {"status": "error", "message": "Missing draft identifiers"}
+
+    try:
+        response = await delete_draft(token, assignment_id, revision_id)
+        if response.status_code >= 400:
+            return {
+                "status": "error",
+                "message": f"Draft deletion failed ({response.status_code})",
+            }
+    except Exception as exc:
+        return {"status": "error", "message": f"Draft deletion failed: {exc}"}
+
+    return {"status": "ok"}
+
+
+@app.get("/")
+async def root():
+    return RedirectResponse(url="/login")
+
+
+@app.get("/login")
+async def login_page(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    is_valid = await session_token_is_valid(token)
+    if is_valid:
+        return RedirectResponse(url=safe_next_path(request.query_params.get("next")))
+
+    return serve_html_file("login.html")
+
+
+@app.get("/home")
+async def home_page(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not await session_token_is_valid(token):
+        return RedirectResponse(url=login_redirect_url(request))
+
+    return serve_html_file("home.html")
+
+
+@app.get("/settings")
+async def settings_page(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not await session_token_is_valid(token):
+        return RedirectResponse(url=login_redirect_url(request))
+
+    return serve_html_file("settings.html")
+
+
+@app.get("/section/{full_path:path}")
+async def section_page(full_path: str, request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+    if not await session_token_is_valid(token):
+        return RedirectResponse(url=login_redirect_url(request))
+
+    parts = full_path.strip("/").split("/")
+    if parts and parts[0]:
+        section_id = parts[0]
+        if len(parts) >= 3 and parts[1] == "assignment":
+            assignment_id = parts[2]
+            if not assignment_id:
+                raise HTTPException(status_code=404, detail="Assignment not found")
+
+            section_id, folder_id, assignment_id = await get_assignment_location(
+                token, section_id, assignment_id
+            )
+
+            redirect_url = (
+                f"/section/{section_id}/folder/{folder_id}/material/{assignment_id}"
+            )
+            if redirect_url:
+                return RedirectResponse(url=redirect_url)
+
+            raise HTTPException(status_code=404, detail="Assignment not found")
+
+        if len(parts) >= 2 and parts[1] == "folder":
+            if len(parts) >= 4 and parts[3] == "material":
+
+                return serve_html_file("material.html")
+            return serve_html_file("course.html")
+        else:
+            return serve_html_file("course.html")
+
+    raise HTTPException(status_code=404, detail="Path not found")
+
+
+@app.get("/{filename}")
+async def serve_resource(filename: str):
+    file_path = (RESOURCES_DIR / filename).resolve()
+
+    if (
+        RESOURCES_DIR.resolve() not in file_path.parents
+        and file_path != RESOURCES_DIR.resolve()
+    ):
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+
+    return FileResponse(file_path)
+
+
+if __name__ == "__main__":
+    print(f"Serving at http://localhost:{PORT}")
+    uvicorn.run(app, host="127.0.0.1", port=PORT)

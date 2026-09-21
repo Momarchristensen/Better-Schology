@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/logo.svg">
+    <title>Login</title>
+    <link rel="stylesheet" href="/app.css">
+    <script src="/app.js"></script>
+
+    <style>
+        .login-container {
+            width: min(100%, 420px);
+            padding: 28px 24px 22px;
+            border-radius: var(--radius);
+            background: var(--surface);
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow);
+        }
+
+        h2 {
+            margin: 0 0 20px;
+            text-align: center;
+            color: var(--text-strong);
+            font-size: clamp(1.8rem, 2vw, 2.1rem);
+            font-weight: 700;
+        }
+
+        form {
+            display: grid;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        input {
+            width: 100%;
+            margin: 0 0 12px;
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border);
+            background: rgb(148, 163, 184, 8%);
+            color: var(--text);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--focus-ring);
+            background: rgb(148, 163, 184, 9%);
+        }
+
+        button {
+            width: 100%;
+            margin-top: 4px;
+            padding: 12px 14px;
+            border: none;
+            border-radius: var(--radius-sm);
+            background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+            color: #fff;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
+            box-shadow: 0 10px 24px rgb(47, 106, 233, 32%);
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.04);
+        }
+
+        .message {
+            margin-top: 14px;
+            font-size: 0.82rem;
+            text-align: center;
+            color: var(--muted);
+        }
+    </style>
+</head>
+
+<body class="app-page app-page--login">
+
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <label>Email</label>
+            <input type="email" id="email" required>
+
+            <label>Password</label>
+            <input type="password" id="password" required>
+
+            <button type="submit" id="submitButton">Sign In</button>
+        </form>
+        <div id="message" class="message"></div>
+    </div>
+
+    <script>
+        const form = document.getElementById("loginForm")
+        const messageTextElement = document.getElementById("message")
+        const submitButton = document.getElementById("submitButton")
+
+        form.addEventListener("submit", async function (event) {
+            event.preventDefault()
+
+            const email = document.getElementById("email").value
+            const password = document.getElementById("password").value
+
+            submitButton.disabled = true
+            submitButton.textContent = "Signing in..."
+            messageTextElement.textContent = "Logging in..."
+
+            try {
+                const response = await fetchWithRetry("/api/get_token", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, password })
+                })
+
+                const data = await response.json()
+
+                if (data.status === "ok") {
+                    messageTextElement.textContent = "Login successful!"
+                    const nextPath = new URLSearchParams(window.location.search).get("next")
+                    if (nextPath && nextPath.startsWith("/") && !nextPath.startsWith("//")) {
+                        window.location.href = nextPath
+                    }
+                    else {
+                        window.location.href = "/home"
+                    }
+                }
+                else {
+                    messageTextElement.textContent = `Error: ${data.message}`
+                }
+
+                submitButton.disabled = false
+                submitButton.textContent = "Sign In"
+            }
+            catch (error) {
+                messageTextElement.textContent = `Network error: ${error.message}`
+                submitButton.disabled = false
+                submitButton.textContent = "Sign In"
+            }
+        })
+    </script>
+
+</body>
+
+</html>
