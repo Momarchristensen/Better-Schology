@@ -1,0 +1,7 @@
+beautifulsoup4
+fastapi
+httpx[http2]
+mammoth
+python-multipart
+requests
+uvicorn

@@ -1,6 +1,6 @@
-# Schology
+# Better Schology
 
-A lightweight Schoology-style course dashboard with a FastAPI backend and a static HTML frontend. It provides course browsing, assignment search, material viewing, document conversion, and assignment submissions through a local web app.
+Better Schology is a lightweight Schoology-style course dashboard with a FastAPI backend and a static HTML frontend. It provides course browsing, assignment search, material viewing, document conversion, and assignment submissions through a local web app.
 
 ## Features
 
@@ -24,12 +24,17 @@ The project expects LibreOffice at `libreoffice/program/soffice.exe`. Keep that 
 
 ## Setup
 
-Create and activate a virtual environment, then install the Python dependencies:
+Create and activate a virtual environment:
 
 ```powershell
 py -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install fastapi uvicorn httpx mammoth python-multipart requests beautifulsoup4
+```
+
+Install the Python dependencies:
+
+```powershell
+python -m pip install -r requirements.txt
 ```
 
 Install the frontend linting dependencies:
@@ -60,6 +65,7 @@ npm run lint:css
 ## Project Layout
 
 - `server.py` - FastAPI application and route handlers
+- `requirements.txt` - Python dependencies
 - `api_utils.py` - Schoology API requests and data helpers
 - `get_token.py` - authentication/session-token handling
 - `HTML/` - frontend pages and static assets
@@ -79,4 +85,4 @@ npm run lint:css
 - ScholarHub
 - Assignment Atlas
 
-Schology is a working title; `CourseNest`, `StudyDock`, and `Classboard` are the strongest alternatives for a friendly, focused dashboard.
+Better Schology is the project name; `CourseNest`, `StudyDock`, and `Classboard` remain alternative names for a friendly, focused dashboard.
