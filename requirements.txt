@@ -3,6 +3,7 @@ fastapi
 httpx[http2]
 lxml
 mammoth
+pyinstaller
 python-multipart
 requests
 uvicorn

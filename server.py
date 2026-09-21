@@ -22,6 +22,7 @@ import mammoth
 import sys
 import tempfile
 import subprocess
+from updater import check_for_updates
 
 from api_utils import (
     base_url,
@@ -179,13 +180,6 @@ async def api_logout(response: Response):
     return {"status": "ok"}
 
 def extract_filename(url: str, headers: dict | None = None) -> str:
-    """Pull a filename from Content-Disposition, falling back to the URL path.
-
-    Uses regex (stopping at ';') instead of naive string splitting, since a
-    naive split on 'filename=' can drag trailing Content-Disposition
-    parameters (e.g. `filename="slides.ppt"; size=123`) into the filename and
-    break extension checks downstream.
-    """
     if headers and "content-disposition" in headers:
         cd = headers["content-disposition"]
 
@@ -206,7 +200,6 @@ def extract_filename(url: str, headers: dict | None = None) -> str:
 
 
 def get_cache_key(url: str) -> str:
-    """Stable cache key derived from the source URL."""
     return hashlib.sha256(url.encode("utf-8")).hexdigest()
 
 
@@ -217,7 +210,6 @@ def cache_paths(cache_key: str):
 
 
 def read_cache(cache_key: str) -> Optional[dict]:
-    """Return cache metadata dict if both the data file and metadata exist, else None."""
     data_path, meta_path = cache_paths(cache_key)
     if not (data_path.exists() and meta_path.exists()):
         return None
@@ -241,7 +233,6 @@ def write_cache(
 
 
 def serve_cached(meta: dict):
-    """Build a response from cached file metadata."""
     data_path: Path = meta["data_path"]
     kind = meta.get("kind", "raw")
     filename = meta.get("filename", data_path.name)
@@ -259,15 +250,12 @@ def serve_cached(meta: dict):
 
 
 def convert_docx_to_html(docx_bytes: bytes, _ext: str) -> bytes:
-    """Convert DOCX bytes to a standalone styled HTML document."""
     result = mammoth.convert_to_html(io.BytesIO(docx_bytes))
     html = DOCX_HTML_TEMPLATE.format(title="document", body=result.value)
     return html.encode("utf-8")
 
 
 def convert_ppt_to_pdf(ppt_bytes: bytes, extension: str = ".pptx") -> bytes:
-    print(ppt_bytes, extension)
-    """Convert PowerPoint (.ppt or .pptx) bytes to PDF."""
     with tempfile.TemporaryDirectory() as tmp_dir:
         ppt_path = os.path.join(tmp_dir, f"slides{extension}")
 
@@ -644,14 +632,6 @@ async def api_submit_assignment(request: Request):
 
 @app.post("/save_draft")
 async def api_save_draft(request: Request):
-    """
-    Persist a draft of the in-progress text submission.
-
-    Called from material.html when the "Add Submission" modal is closed via
-    the X button, or via navigator.sendBeacon on page unload, so unsaved
-    writing isn't lost. Drafts only apply to the written/HTML submission
-    path - there's no equivalent "draft" concept for file uploads.
-    """
     cookie = request.cookies.get("sessionToken")
     token = parse_session_cookie(cookie)
     if not token:
@@ -796,5 +776,6 @@ async def serve_resource(filename: str):
 
 
 if __name__ == "__main__":
+    check_for_updates() 
     print(f"Serving at http://localhost:{PORT}")
     uvicorn.run(app, host="127.0.0.1", port=PORT)
