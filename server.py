@@ -44,19 +44,23 @@ from error_classes import AccountNotFound, InvalidCredentials
 from get_token import get_session_token
 
 if getattr(sys, "frozen", False):
-    script_dir = Path(sys.executable).resolve().parent
+    # PyInstaller extracts bundled read-only assets into _MEIPASS. Keep
+    # generated files beside the executable so they persist between runs.
+    resource_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
+    data_dir = Path(sys.executable).resolve().parent
 else:
-    script_dir = Path(__file__).resolve().parent
+    resource_dir = Path(__file__).resolve().parent
+    data_dir = resource_dir
 
-SOFFICE_PATH = script_dir / "libreoffice" / "program" / "soffice.exe"
+SOFFICE_PATH = resource_dir / "libreoffice" / "program" / "soffice.exe"
 
-html_dir = script_dir / "HTML"
+html_dir = resource_dir / "HTML"
 html_dir.mkdir(parents=True, exist_ok=True)
 
 RESOURCES_DIR = html_dir / "resources"
 RESOURCES_DIR.mkdir(parents=True, exist_ok=True)
 
-CACHE_DIR = script_dir / "cached_files"
+CACHE_DIR = data_dir / "cached_files"
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 PORT = 3498

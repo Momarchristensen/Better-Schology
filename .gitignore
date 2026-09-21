@@ -20,6 +20,11 @@ cached_files/*
 !cached_files/.gitkeep
 *.log
 
+# PyInstaller build artifacts
+build/
+dist/
+*.spec
+
 # Node.js tooling
 node_modules/
 npm-debug.log*
