@@ -30,6 +30,7 @@ jobs:
       - name: Build executable
         run: |
           pyinstaller --onefile --name Better-Schology `
+            --collect-all lxml `
             --add-data "HTML;HTML" `
             --add-data "libreoffice;libreoffice" `
             server.py
