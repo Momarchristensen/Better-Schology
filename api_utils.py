@@ -7,10 +7,9 @@ import httpx
 import asyncio
 from pathlib import Path
 import time
+from config import base_url
 
 script_dir = Path(__file__).resolve().parent
-
-base_url = "https://ca-net.schoology.com"
 
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36",
@@ -211,7 +210,7 @@ def get_material_parent(material):
     links = material.get("@links", {})
     if "parent" in links:
         parent_url = links["parent"]["@id"]
-        #Example: https://ca-net.schoology.com/v2/sections/8467781195, https://ca-net.schoology.com/v2/sections/8467779869/folders/1018170923
+        #Example: {base_url}/v2/sections/8467781195, {base_url}/v2/sections/8467779869/folders/1018170923
         parsed = urlparse(parent_url)
         path_segments = parsed.path.strip("/").split("/")
 
@@ -375,7 +374,7 @@ async def resolve_full_assignment(session_token, material):
                         docviewer_id = viewer_html.find(
                             "select", id="dropbox-viewer-item-select"
                         ).find("option", selected=True)["value"]
-                        docviewer_url = f"https://ca-net.schoology.com/submission/{docviewer_id}/docviewer"
+                        docviewer_url = f"{base_url}/submission/{docviewer_id}/docviewer"
                         docviewer_html = await get_html(session_token, docviewer_url)
                         wrapper = docviewer_html.find("div", id="content-wrapper")
 

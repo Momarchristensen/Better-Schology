@@ -22,6 +22,18 @@ Better Schology is a lightweight Schoology-style course dashboard with a FastAPI
 
 The project expects LibreOffice at `libreoffice/program/soffice.exe`. Keep that directory available when using PowerPoint conversion.
 
+## Schoology Server Configuration
+
+The default Schoology server is `https://ca-net.schoology.com`. To use another Schoology server, edit the generated `config.json` file beside `server.py` when running Python, or at `%APPDATA%\Better-Schology\config.json` when using the packaged Windows executable:
+
+```json
+{
+	"schoology_base_url": "https://your-schoology-server.example.com"
+}
+```
+
+You can copy [config.example.json](config.example.json) as a starting point. The URL must use HTTPS and must not include a query string or fragment. Restart the app after changing the file. The configured server must support the same Schoology API and login flow.
+
 ## Setup
 
 Create and activate a virtual environment:

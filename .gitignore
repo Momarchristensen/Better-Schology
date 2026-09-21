@@ -18,6 +18,7 @@ ENV/
 # Generated application data
 cached_files/*
 !cached_files/.gitkeep
+config.json
 *.log
 
 # PyInstaller build artifacts

@@ -3,12 +3,13 @@ from urllib.parse import urlparse, urlunparse
 from bs4 import BeautifulSoup
 import requests
 import json
+from api_utils import base_url
 
 from error_classes import InvalidCredentials, AccountNotFound
 
 
 def get_saml2_url(session):
-    response = session.get("https://ca-net.schoology.com/", allow_redirects=True)
+    response = session.get(base_url, allow_redirects=True)
     return response.url
 
 
