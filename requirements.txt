@@ -1,6 +1,7 @@
 beautifulsoup4
 fastapi
 httpx[http2]
+lxml
 mammoth
 python-multipart
 requests
