@@ -34,6 +34,22 @@ The default Schoology server is `https://ca-net.schoology.com`. To use another S
 
 You can copy [config.example.json](config.example.json) as a starting point. The URL must use HTTPS and must not include a query string or fragment. Restart the app after changing the file. The configured server must support the same Schoology API and login flow.
 
+## Using the Windows Executable
+
+You do not need Python or Node.js to use the packaged Windows version.
+
+1. Open the project's GitHub page in your browser.
+2. Select **Releases** on the right side of the page. Do not download the files listed under the repository's regular **Code** menu.
+3. Open the newest release and download `Better-Schology.exe` from the **Assets** section.
+4. Move the downloaded file to a folder where you want to keep the app. Do not run it from inside the browser's download preview.
+5. Double-click `Better-Schology.exe`. If Windows displays a security warning, select **More info**, confirm that the publisher is expected, and choose **Run anyway**.
+6. Open `http://localhost:3498` in a browser if it does not open automatically.
+7. Sign in with your Schoology account.
+
+Keep the executable running while using the app. Close its console window to stop the local server. Your downloaded-file cache is stored separately in `%TEMP%\Better-Schology\cached_files`.
+
+To use a different Schoology server, start the executable once, edit `%APPDATA%\Better-Schology\config.json`, and restart the executable. The file is created automatically the first time the app starts.
+
 ## Setup
 
 Create and activate a virtual environment:
