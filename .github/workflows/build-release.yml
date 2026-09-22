@@ -35,7 +35,7 @@ jobs:
             --hidden-import updater `
             --add-data "HTML;HTML" `
             --add-data "libreoffice;libreoffice" `
-            --add-binary "dist\update.exe;." `
+            --add-binary "update.exe;." `
             server.py
 
       - name: Create GitHub Release
