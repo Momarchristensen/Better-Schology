@@ -11,10 +11,10 @@ REPO = "Momarchristensen/Better-Schology"
 GITHUB_API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
 
 
-__version__ = os.environ.get("BETTER_SCHOLOGY_VERSION", "0.0.0")
+__version__ = "0.0.0"
+
 
 print("Running version:", __version__)
-
 
 def _parse_version(v: str) -> tuple:
     v = v.strip().lstrip("vV")

@@ -26,9 +26,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Embed release version
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}"
+          $path = "updater.py"
+          $contents = Get-Content $path -Raw
+          $contents = $contents -replace '__version__ = .*', "__version__ = `\"$version`\""
+          Set-Content $path $contents -Encoding utf8
+
       - name: Build executable
-        env:
-          BETTER_SCHOLOGY_VERSION: ${{ github.ref_name }}
         run: |
           pyinstaller --onefile --clean --name Better-Schology `
             --collect-all lxml `
