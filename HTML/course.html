@@ -894,6 +894,7 @@
         }
 
         function normalizeAccentColor(colorStr) {
+            console.log(colorStr)
             const rgb = parseCSSColorToRGB(colorStr)
             if (!rgb) {
                 return null
@@ -901,7 +902,11 @@
 
             let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b)
 
-            if (s < 12 || l < 12 || l > 95) {
+            if (l < 12) {
+                return `hsl(0, 0%, 30%)`
+            }
+
+            if (s < 12 || l > 95) {
                 h = hashHue(colorStr)
                 s = 75
             }
@@ -909,13 +914,29 @@
             s = clamp(s, 55, 85)
             l = clamp(l, 55, 72)
 
+            console.log(`hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`)
             return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
         }
 
+        function getFolderOutlineColor(colorStr) {
+            const rgb = parseCSSColorToRGB(colorStr)
+            if (!rgb) {
+                return "rgba(0, 0, 0, 0.35)"
+            }
+
+            const { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b)
+            const isDark = l < 50
+            const newL = clamp(isDark ? l + 28 : l - 28, 4, 96)
+            const outlineSat = clamp(s, 20, 85)
+
+            return `hsl(${Math.round(h)}, ${Math.round(outlineSat)}%, ${Math.round(newL)}%)`
+        }
+
         function folderIconSVG(color) {
-            return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
-        <path fill="${color}" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-    </svg>`
+            const outlineColor = getFolderOutlineColor(color)
+            return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="34" height="34">
+                        <path fill="${color}" stroke="${outlineColor}" stroke-width="1.25" stroke-linejoin="round" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                    </svg>`
         }
 
         function setMaterialIcon(iconEl, material) {
@@ -989,26 +1010,38 @@
         }
 
         function sortMaterials(materials, mode) {
-            const sorted = materials.slice()
+            const sortedMaterials = materials.slice()
 
             switch (mode) {
                 case "name-asc":
-                    sorted.sort((a, b) => a.title.localeCompare(b.title))
+                    sortedMaterials.sort((a, b) => a.title.localeCompare(b.title))
                     break
                 case "name-desc":
-                    sorted.sort((a, b) => b.title.localeCompare(a.title))
+                    sortedMaterials.sort((a, b) => b.title.localeCompare(a.title))
                     break
                 case "type":
-                    sorted.sort(
-                        (a, b) =>
-                            a.type.localeCompare(b.type) || a.title.localeCompare(b.title),
-                    )
+                    const sortOrder = [
+                        "folder",
+                        "assignment",
+                        "discussion",
+                        "page",
+                        "document",
+                    ]
+                    sortedMaterials.sort((material1, material2) => {
+                        const aIndex = sortOrder.indexOf(material1.type);
+                        const bIndex = sortOrder.indexOf(material2.type);
+
+                        const aOrder = aIndex === -1 ? Infinity : aIndex;
+                        const bOrder = bIndex === -1 ? Infinity : bIndex;
+
+                        return aOrder - bOrder || material1.title.localeCompare(material2.title);
+                    });
                     break
                 default:
                     break
             }
 
-            return sorted
+            return sortedMaterials
         }
 
         function updateCourseUrl(folderId, mode = viewMode) {
