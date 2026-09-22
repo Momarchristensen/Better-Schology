@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/logo.svg">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/logo.svg" />
     <title>Home</title>
-    <link rel="stylesheet" href="/app.css">
-    <link rel="stylesheet" href="/assignments-sidebar.css">
-    <link rel="stylesheet" href="/assignments-search.css">
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/assignments-sidebar.css" />
+    <link rel="stylesheet" href="/assignments-search.css" />
     <script src="/app.js"></script>
     <style>
         .home-toolbar {
@@ -34,6 +34,7 @@
             display: flex;
             flex: 0 0 auto;
             align-items: center;
+            gap: 12px;
             min-height: 36px;
             margin-bottom: 4px;
         }
@@ -44,7 +45,6 @@
             margin: 0;
         }
 
-
         .main-layout {
             flex: 1 1 auto;
             display: flex;
@@ -54,7 +54,6 @@
             min-height: 0;
             width: 100%;
         }
-
 
         .courses-section {
             flex: 1 1 auto;
@@ -93,7 +92,9 @@
 
         .course-card {
             width: 100%;
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
+            transition:
+                transform 0.25s ease,
+                box-shadow 0.25s ease;
             border-radius: var(--radius);
         }
 
@@ -158,33 +159,31 @@
             border-radius: 999px;
         }
 
-        .page-actions {
-    gap: 12px;
-}
+        .logout-button {
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: #d93025;
+            cursor: pointer;
+            font: inherit;
+            padding: 6px 12px;
+            transition:
+                color 0.25s ease,
+                border-color 0.25s ease;
+        }
 
-.logout-button {
-    background: none;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    color: #d93025;
-    cursor: pointer;
-    font: inherit;
-    padding: 6px 12px;
-    transition: color 0.25s ease, border-color 0.25s ease;
-}
+        .logout-button:hover,
+        .logout-button:focus-visible {
+            color: #b3261e;
+            border-color: #b3261e;
+        }
 
-.logout-button:hover,
-.logout-button:focus-visible {
-    color: #b3261e;
-    border-color: #b3261e;
-}
+        .logout-button:disabled {
+            opacity: 0.6;
+            cursor: default;
+        }
 
-.logout-button:disabled {
-    opacity: 0.6;
-    cursor: default;
-}
-
-        @media (width <= 720px) {
+        @media (width <=720px) {
             .main-layout {
                 flex-direction: column;
             }
@@ -202,18 +201,18 @@
             }
         }
     </style>
-
 </head>
 
 <body class="app-page app-page--dashboard">
-
     <div class="home-toolbar">
         <div id="assignments-search"></div>
 
         <nav class="page-actions" aria-label="Page actions">
-    <a class="settings-link" href="/settings">Settings</a>
-    <button type="button" id="logout-button" class="logout-button">Log out</button>
-</nav>
+            <a class="settings-link" href="/settings">Settings</a>
+            <button type="button" id="logout-button" class="logout-button">
+                Log out
+            </button>
+        </nav>
     </div>
 
     <div class="main-layout">
@@ -237,7 +236,7 @@
         const courses = fetchCoursesData()
         const sidebar = window.initAssignmentsSidebar({
             mountId: "assignments-sidebar",
-            waitFor: courses
+            waitFor: courses,
         })
         init()
         window.initAssignmentsSearch({ mountId: "assignments-search" })
@@ -254,7 +253,6 @@
             loadingTextElement.textContent = ""
             loadingTextElement.style.display = "none"
         }
-
 
         async function fetchCoursesData() {
             const response = await fetchCourses()
@@ -288,7 +286,10 @@
         function renderCourses(courseList) {
             coursesListElement.innerHTML = ""
 
-            courseList.sort((courseOne, courseTwo) => (courseTwo.hasMaterials === true) - (courseOne.hasMaterials === true))
+            courseList.sort(
+                (courseOne, courseTwo) =>
+                    (courseTwo.hasMaterials === true) - (courseOne.hasMaterials === true),
+            )
 
             const courseTemplate = document.getElementById("course-template")
 
@@ -296,7 +297,9 @@
                 const course = courseList[index]
                 const courseClone = courseTemplate.content.cloneNode(true)
 
-                const courseCardBackground = courseClone.querySelector(".course-card-background")
+                const courseCardBackground = courseClone.querySelector(
+                    ".course-card-background",
+                )
                 const courseCardTitle = courseClone.querySelector(".course-title")
                 const courseLink = courseClone.querySelector(".course-link")
 
@@ -310,32 +313,33 @@
         }
 
         async function logout() {
-    const button = document.getElementById("logout-button")
-    button.disabled = true
+            const button = document.getElementById("logout-button")
+            button.disabled = true
 
-    try {
-        const response = await fetch("/api/logout", {
-            method: "POST"
-        })
+            try {
+                const response = await fetch("/api/logout", {
+                    method: "POST",
+                })
 
-        const data = await response.json()
+                const data = await response.json()
 
-        if (data.status === "ok") {
-            window.location.href = "/login"
-            return
+                if (data.status === "ok") {
+                    window.location.href = "/login"
+                    return
+                }
+
+                console.error("Logout failed:", data.message)
+            }
+            catch (error) {
+                console.error("Error logging out:", error)
+            }
+
+            button.disabled = false
         }
 
-        console.error("Logout failed:", data.message)
-    }
-    catch (error) {
-        console.error("Error logging out:", error)
-    }
-
-    button.disabled = false
-}
-
-document.getElementById("logout-button").addEventListener("click", logout)
-
+        document
+            .getElementById("logout-button")
+            .addEventListener("click", logout)
     </script>
 
     <template id="course-template">
@@ -348,7 +352,6 @@ document.getElementById("logout-button").addEventListener("click", logout)
             </a>
         </li>
     </template>
-
 </body>
 
 </html>

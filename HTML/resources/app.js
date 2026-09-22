@@ -1,9 +1,24 @@
 const SETTINGS_KEYS = {
-    reducedMotion: "schologyReducedMotion",
-    showAssignments: "schologyShowAssignments",
-    viewMode: "courseMaterialsViewMode",
-    sortMode: "courseMaterialsSortMode"
+    reducedMotion: "reducedMotion",
+    showAssignments: "showAssignments",
+    viewMode: "viewMode",
+    sortMode: "sortMode",
+    folderColorMode: "folderColorMode",
+    rememberExpandedFolders: "rememberExpanded",
+    expandedFolders: "expandedFolders",
 }
+
+const DEFAULT_SETTINGS = {
+    reducedMotion: false,
+    showAssignments: true,
+    viewMode: "explorer",
+    sortMode: "default",
+    folderColorMode: "random",
+    rememberExpandedFolders: false
+}
+
+window.DEFAULT_SETTINGS = DEFAULT_SETTINGS
+window.SETTINGS_KEYS = SETTINGS_KEYS
 
 const RETRY_DELAY_MS = 1000
 const MAX_RETRY_DELAY_MS = 10000
@@ -49,13 +64,29 @@ function getStoredSetting(key, fallback) {
     }
 }
 
+function initializeSettings() {
+    try {
+        Object.entries(DEFAULT_SETTINGS).forEach(([name, value]) => {
+            const key = SETTINGS_KEYS[name]
+            if (localStorage.getItem(key) === null) {
+                localStorage.setItem(key, String(value))
+            }
+        })
+    }
+    catch (error) {
+        console.error("Unable to initialize settings:", error)
+    }
+}
+
 function applyStoredSettings() {
     const root = document.documentElement
     const body = document.body
 
-    root.dataset.reducedMotion = getStoredSetting(SETTINGS_KEYS.reducedMotion, "false")
-    body.dataset.showAssignments = getStoredSetting(SETTINGS_KEYS.showAssignments, "true")
+    root.dataset.reducedMotion = getStoredSetting(SETTINGS_KEYS.reducedMotion, String(DEFAULT_SETTINGS.reducedMotion))
+    body.dataset.showAssignments = getStoredSetting(SETTINGS_KEYS.showAssignments, String(DEFAULT_SETTINGS.showAssignments))
 }
+
+initializeSettings()
 
 function updateSettingsLinks() {
     document.querySelectorAll(".settings-link").forEach((link) => {

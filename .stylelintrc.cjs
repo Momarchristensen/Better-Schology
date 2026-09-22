@@ -13,7 +13,7 @@ module.exports = {
     "font-family-no-missing-generic-family-keyword": true,
     "color-function-alias-notation": "without-alpha",
     "color-function-notation": "legacy",
-    "rule-empty-line-before": false
+    "rule-empty-line-before": null
   },
 };
 

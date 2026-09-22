@@ -228,8 +228,6 @@ async def resolve_discussion(session_token, material_url):
 
 
 async def resolve_full_discussion(session_token, material):
-    material_object = resolve_graded_material(material)
-
     raise NotImplementedError("Handle discussion")
 
 
@@ -467,7 +465,6 @@ async def resolve_full_assignment(session_token, material):
             elif attachment["type"] == "file":
                 title = attachment["title"]
                 url = f"{base_url}{attachment['downloadUrl']}"
-                path = urlparse(url).path
                 extension = os.path.splitext(urlparse(url).path)[1].lstrip(".")
                 attachments.append(
                     {"type": "file", "title": title, "url": url, "extension": extension}

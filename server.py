@@ -22,8 +22,6 @@ import mammoth
 import sys
 import tempfile
 import subprocess
-from updater import check_for_updates
-
 from api_utils import (
     base_url,
     get_assignment_location,
@@ -43,10 +41,9 @@ from api_utils import (
 )
 from error_classes import AccountNotFound, InvalidCredentials
 from get_token import get_session_token
+from updater import check_for_updates
 
 if getattr(sys, "frozen", False):
-    # PyInstaller extracts bundled read-only assets into _MEIPASS. Keep
-    # the cache outside the extracted bundle so it persists between runs.
     resource_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
     data_dir = Path(tempfile.gettempdir()) / "Better-Schology"
 else:
@@ -178,6 +175,7 @@ async def api_logout(response: Response):
     )
 
     return {"status": "ok"}
+
 
 def extract_filename(url: str, headers: dict | None = None) -> str:
     if headers and "content-disposition" in headers:
@@ -393,7 +391,6 @@ async def api_file(url: str, request: Request):
             media_type=converter["media_type"],
             headers={"Content-Disposition": f'inline; filename="{out_filename}"'},
         )
-
 
     if not range_header:
         try:
@@ -776,6 +773,6 @@ async def serve_resource(filename: str):
 
 
 if __name__ == "__main__":
-    check_for_updates() 
+    check_for_updates()
     print(f"Serving at http://localhost:{PORT}")
     uvicorn.run(app, host="127.0.0.1", port=PORT)

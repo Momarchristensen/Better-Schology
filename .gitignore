@@ -40,3 +40,7 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+
+# Test Scripts
+/test*.py

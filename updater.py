@@ -11,7 +11,7 @@ REPO = "Momarchristensen/Better-Schology"
 GITHUB_API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
 
 
-__version__ = "1.0.4"
+__version__ = "1.0.0"
 
 
 def _parse_version(v: str) -> tuple:

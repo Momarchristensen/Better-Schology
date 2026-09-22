@@ -1,2203 +1,2332 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/logo.svg">
-    <title>Material</title>
-    <link rel="stylesheet" href="/app.css">
-    <script src="/app.js"></script>
-    <style>
-        :root {
-            --soft-panel: rgb(255, 255, 255, 4%);
-            --soft-border: rgb(255, 255, 255, 8%);
-            --link: #93c5fd;
-            --muted-panel: #cbd5e1;
-            --late-bg: rgb(255, 107, 107, 14%);
-            --late-text: #ff8a8a;
-        }
-
-        .page {
-            width: min(1200px, calc(100% - 32px));
-            margin: 0 auto;
-            padding: 24px 0 40px;
-        }
-
-        .header {
-            margin-bottom: 18px;
-        }
-
-        .header h2 {
-            margin: 0;
-            padding: 2px 4px;
-            font-size: clamp(1.6rem, 2.4vw, 2.3rem);
-            font-weight: 750;
-            letter-spacing: -0.03em;
-            line-height: 1.15;
-            color: var(--text-strong);
-        }
-
-        #material-viewer {
-            display: grid;
-            gap: 16px;
-        }
-
-        .panels,
-        .description,
-        .submissions-container,
-        .attachments-container {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            backdrop-filter: blur(12px);
-        }
-
-        .panels {
-            padding: 20px;
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) minmax(0, auto);
-            gap: 18px;
-            align-items: start;
-        }
-
-        .left-panel {
-            min-width: 0;
-        }
-
-        .right-panel {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: flex-start;
-            min-width: 220px;
-            max-width: 100%;
-        }
-
-        .category {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            color: var(--muted-panel);
-            text-transform: uppercase;
-            margin-bottom: 10px;
-        }
-
-        .due-date {
-            display: grid;
-            gap: 6px;
-            color: var(--muted);
-            font-size: 0.98rem;
-            line-height: 1.45;
-        }
-
-        .due-date-text {
-            color: var(--text);
-            font-weight: 600;
-        }
-
-        .due-date-countdown {
-            color: var(--muted-panel);
-            font-weight: 500;
-        }
-
-        .grade {
-            text-align: right;
-            padding: 10px 12px;
-            border-radius: 16px;
-            background: var(--soft-panel);
-            border: 1px solid var(--soft-border);
-        }
-
-        .grade-score {
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: var(--text-strong);
-        }
-
-        .grade-comment {
-            margin-top: 6px;
-            font-size: 0.95rem;
-            color: var(--muted-panel);
-            line-height: 1.45;
-            white-space: pre-wrap;
-        }
-
-        .content-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
-            gap: 16px;
-            align-items: start;
-        }
-
-        .description {
-            padding: 20px;
-            line-height: 1.7;
-            min-height: 100px;
-            color: var(--text);
-            overflow-wrap: anywhere;
-        }
-
-        .description-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: var(--muted-panel);
-            margin-bottom: 10px;
-        }
-
-        .description-content {
-            background: var(--soft-panel);
-            border: 1px solid var(--soft-border);
-            border-radius: 12px;
-            padding: 12px 14px;
-            white-space: pre-line;
-        }
-
-        .description a {
-            color: var(--link);
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-
-        .submissions-container {
-            padding: 18px;
-            min-width: 0;
-        }
-
-        .left-content {
-            display: grid;
-            gap: 16px;
-            min-width: 0;
-        }
-
-        .submissions {
-            display: grid;
-            gap: 12px;
-        }
-
-        .submission {
-            background: rgb(255, 255, 255, 4.5%);
-            border: 1px solid rgb(255, 255, 255, 9%);
-            border-radius: 16px;
-            padding: 14px;
-            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-        }
-
-        .submission:hover {
-            transform: translateY(-2px);
-            background: rgb(255, 255, 255, 7%);
-            border-color: rgb(255, 255, 255, 14%);
-        }
-
-        .submission-dropzone {
-            border: 2px dashed var(--soft-border);
-            border-radius: 12px;
-            padding: 14px;
-            display: grid;
-            gap: 10px;
-            transition: border-color 0.18s ease, background 0.18s ease;
-        }
-
-        .submission-dropzone.drag-over {
-            border-color: var(--link);
-            background: rgb(147, 197, 253, 8%);
-        }
-
-        .submission-dropzone-hint {
-            font-size: 0.85rem;
-            color: var(--muted-panel);
-            text-align: center;
-            pointer-events: none;
-        }
-
-        .submission-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .submission-link {
-            font-weight: 700;
-            font-size: 0.98rem;
-            color: var(--link);
-            text-decoration: none;
-        }
-
-        .submission-link:hover {
-            text-decoration: underline;
-        }
-
-        .late-text {
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 3px 8px;
-            border-radius: 999px;
-            background: var(--late-bg);
-            color: var(--late-text);
-            font-size: 0.74rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-        }
-
-        .late-text.show {
-            display: inline-flex;
-        }
-
-        .submission-content {
-            min-width: 0;
-        }
-
-        .file-wrapper {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            background: rgb(255, 255, 255, 4%);
-            border: 1px solid rgb(255, 255, 255, 8%);
-            border-radius: 12px;
-            padding: 10px 12px;
-        }
-
-        .file-name {
-            font-size: 0.92rem;
-            color: var(--text);
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .download-btn {
-            background: linear-gradient(180deg, var(--accent), var(--accent-strong));
-            color: #fff;
-            text-decoration: none;
-            padding: 8px 12px;
-            border-radius: 10px;
-            font-size: 0.86rem;
-            font-weight: 700;
-            white-space: nowrap;
-            transition: transform 0.18s ease, filter 0.18s ease;
-        }
-
-        .download-btn:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.04);
-        }
-
-        .submission-viewer {
-            background: rgb(0, 0, 0, 22%);
-            border: 1px solid rgb(255, 255, 255, 8%);
-            border-radius: 12px;
-            margin-top: 8px;
-            padding: 12px;
-            overflow-x: auto;
-        }
-
-        .submissions-row {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            align-items: stretch;
-        }
-
-        .back-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            margin-bottom: 12px;
-            padding: 8px 14px;
-            border-radius: 12px;
-            background: var(--surface-strong);
-            border: 1px solid var(--border);
-            color: var(--text);
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: background 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
-            width: fit-content;
-        }
-
-        .back-btn:hover {
-            background: rgb(255, 255, 255, 10%);
-            border-color: rgb(148, 163, 184, 28%);
-            transform: translateY(-1px);
-        }
-
-        .attachments-container {
-            padding: 16px 18px;
-            display: none;
-        }
-
-        .attachments-container.show {
-            display: grid;
-            gap: 10px;
-        }
-
-        .attachments-title {
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            color: var(--muted-panel);
-        }
-
-        .attachments {
-            display: grid;
-            gap: 8px;
-        }
-
-        .attachment-container {
-            display: grid;
-            gap: 8px;
-            background: var(--surface-strong);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 10px 12px;
-        }
-
-        .attachment-separator {
-            width: 100%;
-            height: 1px;
-            background: rgb(255, 255, 255, 12%);
-            margin: 8px 0;
-        }
-
-        .attachment-download {
-            flex: 0 0 auto;
-            margin-left: 12px;
-            width: 38px !important;
-            height: 38px;
-            display: inline-flex !important;
-            align-items: center;
-            justify-content: center;
-            background: rgb(255, 255, 255, 6%);
-            border: 1px solid rgb(255, 255, 255, 10%);
-            border-radius: 10px;
-            color: var(--text);
-            text-decoration: none;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-        }
-
-        .attachment-download::before {
-            content: "↓";
-            transform: translateY(-1px);
-        }
-
-        .attachment-download:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .attachment-download:active {
-            transform: translateY(0);
-        }
-
-        .attachment-file {
-            display: block;
-            min-width: 0;
-            flex: 1;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            color: var(--link);
-            text-decoration: none;
-        }
-
-        .attachment-file:hover {
-            text-decoration: underline;
-        }
-
-        .attachment-row {
-            display: flex;
-            flex-flow: row wrap;
-            align-items: center;
-            width: 100%;
-            gap: 10px;
-            min-width: 0;
-        }
-
-        .attachment-link {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: rgb(255, 255, 255, 4%);
-            border: 1px solid rgb(255, 255, 255, 8%);
-            border-radius: 12px;
-            padding: 10px 12px;
-            color: var(--link);
-            text-decoration: none;
-            font-size: 0.92rem;
-            font-weight: 600;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-            min-width: 0;
-            max-width: 100%;
-        }
-
-        .attachment-link:hover {
-            background: rgb(255, 255, 255, 7%);
-            border-color: rgb(255, 255, 255, 14%);
-            transform: translateY(-1px);
-        }
-
-        .attachment-link::before {
-            content: "🔗";
-            font-size: 0.9rem;
-        }
-
-        .pdf-container {
-            width: 100%;
-            position: relative;
-        }
-
-        .pdf-container:fullscreen {
-            background: var(--bg);
-            padding: 16px;
-        }
-
-        .pdf-controls {
-            display: flex;
-            justify-content: flex-end;
-            gap: 8px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .pdf-button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            padding: 8px 12px;
-            border-radius: 10px;
-            background: rgb(255, 255, 255, 6%);
-            border: 1px solid rgb(255, 255, 255, 10%);
-            color: var(--text);
-            font-size: 0.85rem;
-            font-weight: 600;
-            text-decoration: none;
-            cursor: pointer;
-            transition: background 0.18s ease, border-color 0.18s ease, transform 0.18s ease;
-        }
-
-        .pdf-button:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .add-submission-btn {
-            background: linear-gradient(180deg, var(--accent), var(--accent-strong));
-            color: white;
-            border: none;
-            border-radius: 14px;
-            padding: 12px 16px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.18s ease, filter 0.18s ease;
-            height: fit-content;
-            white-space: nowrap;
-            box-shadow: 0 10px 24px rgb(47, 106, 233, 28%);
-            width: 100%;
-        }
-
-        .add-submission-btn:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.05);
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .material-viewer img {
-            max-width: 100%;
-            border-radius: 16px;
-        }
-
-        .doc-image {
-            max-width: 100%;
-            max-height: min(70vh, 700px);
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            border-radius: 16px;
-            cursor: zoom-in;
-            display: block;
-            margin: 0 auto;
-        }
-
-        .image-lightbox {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            background: rgb(0, 0, 0, 82%);
-            backdrop-filter: blur(6px);
-            align-items: center;
-            justify-content: center;
-            padding: 32px;
-            cursor: zoom-out;
-        }
-
-        .image-lightbox.show {
-            display: flex;
-        }
-
-        .image-lightbox img {
-            max-width: 100%;
-            max-height: 100%;
-            width: auto;
-            height: auto;
-            object-fit: contain;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgb(0, 0, 0, 45%);
-        }
-
-        .image-lightbox-close {
-            position: fixed;
-            top: 18px;
-            right: 22px;
-            width: 40px;
-            height: 40px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: rgb(255, 255, 255, 8%);
-            border: 1px solid rgb(255, 255, 255, 14%);
-            color: var(--text);
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        .image-lightbox-close:hover {
-            background: rgb(255, 255, 255, 16%);
-        }
-
-        embed {
-            width: 100%;
-            height: min(78vh, 900px);
-            border: 0;
-            border-radius: 16px;
-            overflow: hidden;
-        }
-
-        .pdf-container:fullscreen embed {
-            height: calc(100vh - 70px);
-        }
-
-        iframe {
-            width: 100%;
-            height: min(78vh, 900px);
-            border: 0;
-            border-radius: 16px;
-            background: white;
-        }
-
-        .comment {
-            display: none;
-        }
-
-        .submission-modal-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            background: rgb(0, 0, 0, 55%);
-            backdrop-filter: blur(6px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-        }
-
-        .submission-modal {
-            width: min(880px, 100%);
-            max-height: min(92vh, 920px);
-            display: flex;
-            flex-direction: column;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            box-shadow: 0 20px 60px rgb(0, 0, 0, 45%);
-            overflow: hidden;
-        }
-
-        .submission-modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px;
-            border-bottom: 1px solid var(--border);
-            flex: 0 0 auto;
-        }
-
-        .submission-modal-header h3 {
-            margin: 0;
-            font-size: 1.1rem;
-            font-weight: 750;
-            color: var(--text-strong);
-        }
-
-        .submission-modal-close {
-            width: 34px;
-            height: 34px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: rgb(255, 255, 255, 6%);
-            border: 1px solid rgb(255, 255, 255, 10%);
-            color: var(--text);
-            font-size: 18px;
-            cursor: pointer;
-            transition: background 0.18s ease;
-        }
-
-        .submission-modal-close:hover {
-            background: rgb(255, 255, 255, 14%);
-        }
-
-        .submission-modal-body {
-            padding: 18px 20px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-            flex: 1 1 auto;
-            min-height: 0;
-        }
-
-        .submission-modal-tabs {
-            display: flex;
-            gap: 6px;
-            border-bottom: 1px solid var(--soft-border);
-            flex: 0 0 auto;
-        }
-
-        .submission-tab-btn {
-            appearance: none;
-            background: transparent;
-            border: none;
-            padding: 8px 14px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            color: var(--muted-panel);
-            cursor: pointer;
-            border-bottom: 2px solid transparent;
-            transform: translateY(1px);
-            transition: color 0.18s ease, border-color 0.18s ease;
-        }
-
-        .submission-tab-btn:hover {
-            color: var(--text);
-        }
-
-        .submission-tab-btn.active {
-            color: var(--text-strong);
-            border-bottom-color: var(--link);
-        }
-
-        .submission-modal-panels {
-            flex: 1 1 auto;
-            display: flex;
-            min-height: 0;
-        }
-
-        .submission-tab-panel {
-            display: none;
-            flex-direction: column;
-            gap: 16px;
-            flex: 1 1 auto;
-            min-height: 0;
-        }
-
-        .submission-tab-panel.active {
-            display: flex;
-        }
-
-        .submission-modal-section {
-            display: grid;
-            gap: 8px;
-        }
-
-        .submission-modal-section.submission-editor-section {
-            flex: 1 1 auto;
-            min-height: 320px;
-        }
-
-        .submission-modal-label {
-            font-size: 0.85rem;
-            font-weight: 700;
-            letter-spacing: 0.03em;
-            text-transform: uppercase;
-            color: var(--muted-panel);
-        }
-
-        .submission-editor-wrapper {
-            flex: 1 1 auto;
-            display: flex;
-            flex-direction: column;
-            min-height: 280px;
-            border: 1px solid var(--soft-border);
-            border-radius: 10px;
-            overflow: visible;
-            background: rgb(0, 0, 0, 22%);
-        }
-
-        .submission-editor-quill {
-            flex: 1 1 auto;
-            min-height: 0;
-            color: var(--text);
-        }
-
-        .submission-editor-wrapper .ql-toolbar.ql-snow {
-            background: var(--soft-panel);
-            border: none;
-            border-bottom: 1px solid var(--soft-border);
-            border-top-left-radius: 10px;
-            border-top-right-radius: 10px;
-        }
-
-        .submission-editor-wrapper .ql-container.ql-snow {
-            border: none;
-            font-size: 0.98rem;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-            overflow: hidden;
-        }
-
-        .submission-editor-wrapper .ql-tooltip {
-            z-index: 20;
-        }
-
-        .submission-editor-wrapper .ql-editor {
-            min-height: 280px;
-            color: var(--text);
-        }
-
-        .submission-editor-wrapper .ql-editor.ql-blank::before {
-            color: var(--muted-panel);
-            font-style: normal;
-        }
-
-        .submission-editor-wrapper .ql-snow .ql-stroke {
-            stroke: var(--text);
-        }
-
-        .submission-editor-wrapper .ql-snow .ql-fill {
-            fill: var(--text);
-        }
-
-        .submission-editor-wrapper .ql-snow .ql-picker {
-            color: var(--text);
-        }
-
-        .submission-editor-wrapper .ql-snow .ql-picker-options {
-            background: var(--surface-strong, var(--surface));
-            border: 1px solid var(--soft-border);
-        }
-
-        .submission-editor-wrapper .ql-toolbar.ql-snow .ql-formats button:hover,
-        .submission-editor-wrapper .ql-toolbar.ql-snow .ql-formats .ql-active {
-            background: rgb(255, 255, 255, 10%);
-            border-radius: 6px;
-        }
-
-        .submission-file-input {
-            color: var(--text);
-            font-size: 0.9rem;
-        }
-
-        .submission-attach-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .submission-drive-btn {
-            background: rgb(255, 255, 255, 6%);
-            border: 1px solid var(--soft-border);
-            border-radius: 10px;
-            padding: 7px 14px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text);
-            cursor: pointer;
-            transition: background 0.18s ease, border-color 0.18s ease;
-        }
-
-        .submission-drive-btn:hover {
-            background: rgb(255, 255, 255, 10%);
-        }
-
-        .submission-drive-btn:disabled {
-            opacity: 0.6;
-            cursor: default;
-        }
-
-        .submission-file-list {
-            display: grid;
-            gap: 8px;
-        }
-
-        .submission-file-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 10px;
-            background: rgb(255, 255, 255, 4%);
-            border: 1px solid rgb(255, 255, 255, 8%);
-            border-radius: 10px;
-            padding: 8px 10px;
-            font-size: 0.88rem;
-        }
-
-        .submission-file-name {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            min-width: 0;
-        }
-
-        .submission-file-remove {
-            flex: 0 0 auto;
-            width: 26px;
-            height: 26px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            background: rgb(255, 255, 255, 6%);
-            border: 1px solid rgb(255, 255, 255, 10%);
-            color: var(--text);
-            cursor: pointer;
-            font-size: 13px;
-        }
-
-        .submission-file-remove:hover {
-            background: var(--late-bg);
-            border-color: var(--late-text);
-            color: var(--late-text);
-        }
-
-        .submission-comment-input {
-            width: 100%;
-            resize: vertical;
-            background: rgb(0, 0, 0, 22%);
-            border: 1px solid var(--soft-border);
-            border-radius: 10px;
-            padding: 8px 12px;
-            color: var(--text);
-            font-family: inherit;
-            font-size: 0.9rem;
-        }
-
-        .submission-modal-error {
-            color: var(--late-text);
-            font-size: 0.88rem;
-            min-height: 1em;
-        }
-
-        .submission-modal-footer {
-            display: flex;
-            justify-content: flex-end;
-            gap: 10px;
-            padding: 14px 20px;
-            border-top: 1px solid var(--border);
-            flex: 0 0 auto;
-        }
-
-        .submission-modal-submit {
-            background: linear-gradient(180deg, var(--accent), var(--accent-strong));
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 9px 18px;
-            font-size: 0.9rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: transform 0.18s ease, filter 0.18s ease;
-        }
-
-        .submission-modal-submit:hover {
-            transform: translateY(-1px);
-            filter: brightness(1.05);
-        }
-
-        .submission-modal-submit:disabled {
-            opacity: 0.6;
-            cursor: default;
-            transform: none;
-        }
-
-        @media (width <=640px) {
-            .submission-modal-overlay {
-                align-items: flex-start;
-                padding: 12px;
-                overflow-y: auto;
-            }
-
-            .submission-modal {
-                max-height: 96vh;
-                width: 100%;
-            }
-
-            .submission-modal-section.submission-editor-section {
-                min-height: 220px;
-            }
-
-            .submission-editor-wrapper,
-            .submission-editor-wrapper .ql-editor {
-                min-height: 200px;
-            }
-        }
-
-        @media (width <=960px) {
-            .content-row {
-                grid-template-columns: 1fr;
-            }
-
-            .submissions-row {
-                grid-template-columns: 1fr;
-            }
-
-            .add-submission-btn {
-                width: 100%;
-            }
-
-            .right-panel {
-                align-items: flex-start;
-                min-width: 0;
-            }
-
-            .grade {
-                text-align: left;
-                width: 100%;
-            }
-        }
-
-        @media (width <=640px) {
-            .page {
-                width: 100%;
-                padding-top: 16px;
-                padding-left: 12px;
-                padding-right: 12px;
-            }
-
-            .panels {
-                grid-template-columns: 1fr;
-            }
-
-            .panels,
-            .description,
-            .submissions-container {
-                padding: 16px;
-            }
-
-            .right-panel {
-                min-width: 0;
-            }
-
-            .header h2 {
-                font-size: 1.45rem;
-            }
-
-            .file-wrapper {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .download-btn {
-                text-align: center;
-            }
-
-            embed,
-            iframe {
-                height: 70vh;
-            }
-        }
-    </style>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/logo.svg" />
+  <title>Material</title>
+  <link rel="stylesheet" href="/app.css" />
+  <script src="/app.js"></script>
+  <style>
+    :root {
+      --soft-panel: rgb(255, 255, 255, 4%);
+      --soft-border: rgb(255, 255, 255, 8%);
+      --link: #93c5fd;
+      --muted-panel: #cbd5e1;
+      --late-bg: rgb(255, 107, 107, 14%);
+      --late-text: #ff8a8a;
+    }
+
+    .page {
+      width: min(1200px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 40px;
+    }
+
+    .header {
+      margin-bottom: 18px;
+    }
+
+    .header h2 {
+      margin: 0;
+      padding: 2px 4px;
+      font-size: clamp(1.6rem, 2.4vw, 2.3rem);
+      font-weight: 750;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      color: var(--text-strong);
+    }
+
+    #material-viewer {
+      display: grid;
+      gap: 16px;
+    }
+
+    .panels,
+    .description,
+    .submissions-container,
+    .attachments-container {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .panels {
+      padding: 20px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, auto);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .left-panel {
+      min-width: 0;
+    }
+
+    .right-panel {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-start;
+      min-width: 220px;
+      max-width: 100%;
+    }
+
+    .category {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: var(--muted-panel);
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .due-date {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.45;
+    }
+
+    .due-date-text {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .due-date-countdown {
+      color: var(--muted-panel);
+      font-weight: 500;
+    }
+
+    .grade {
+      text-align: right;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: var(--soft-panel);
+      border: 1px solid var(--soft-border);
+    }
+
+    .grade-score {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-strong);
+    }
+
+    .grade-comment {
+      margin-top: 6px;
+      font-size: 0.95rem;
+      color: var(--muted-panel);
+      line-height: 1.45;
+      white-space: pre-wrap;
+    }
+
+    .content-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.9fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .description {
+      padding: 20px;
+      line-height: 1.7;
+      min-height: 100px;
+      color: var(--text);
+      overflow-wrap: anywhere;
+    }
+
+    .description-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted-panel);
+      margin-bottom: 10px;
+    }
+
+    .description-content {
+      background: var(--soft-panel);
+      border: 1px solid var(--soft-border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      white-space: pre-line;
+    }
+
+    .description a {
+      color: var(--link);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
+    .submissions-container {
+      padding: 18px;
+      min-width: 0;
+    }
+
+    .left-content {
+      display: grid;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .submissions {
+      display: grid;
+      gap: 12px;
+    }
+
+    .submission {
+      background: rgb(255, 255, 255, 4.5%);
+      border: 1px solid rgb(255, 255, 255, 9%);
+      border-radius: 16px;
+      padding: 14px;
+      transition:
+        transform 0.18s ease,
+        background 0.18s ease,
+        border-color 0.18s ease;
+    }
+
+    .submission:hover {
+      transform: translateY(-2px);
+      background: rgb(255, 255, 255, 7%);
+      border-color: rgb(255, 255, 255, 14%);
+    }
+
+    .submission-dropzone {
+      border: 2px dashed var(--soft-border);
+      border-radius: 12px;
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+      transition:
+        border-color 0.18s ease,
+        background 0.18s ease;
+    }
+
+    .submission-dropzone.drag-over {
+      border-color: var(--link);
+      background: rgb(147, 197, 253, 8%);
+    }
+
+    .submission-dropzone-hint {
+      font-size: 0.85rem;
+      color: var(--muted-panel);
+      text-align: center;
+      pointer-events: none;
+    }
+
+    .submission-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .submission-link {
+      font-weight: 700;
+      font-size: 0.98rem;
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    .submission-link:hover {
+      text-decoration: underline;
+    }
+
+    .late-text {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: var(--late-bg);
+      color: var(--late-text);
+      font-size: 0.74rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    .late-text.show {
+      display: inline-flex;
+    }
+
+    .submission-content {
+      min-width: 0;
+    }
+
+    .file-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgb(255, 255, 255, 4%);
+      border: 1px solid rgb(255, 255, 255, 8%);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .file-name {
+      font-size: 0.92rem;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .download-btn {
+      background: linear-gradient(180deg,
+          var(--accent),
+          var(--accent-strong));
+      color: #fff;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+      transition:
+        transform 0.18s ease,
+        filter 0.18s ease;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.04);
+    }
+
+    .submission-viewer {
+      background: rgb(0, 0, 0, 22%);
+      border: 1px solid rgb(255, 255, 255, 8%);
+      border-radius: 12px;
+      margin-top: 8px;
+      padding: 12px;
+      overflow-x: auto;
+    }
+
+    .submissions-row {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      background: var(--surface-strong);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition:
+        background 0.18s ease,
+        transform 0.18s ease,
+        border-color 0.18s ease;
+      width: fit-content;
+    }
+
+    .back-btn:hover {
+      background: rgb(255, 255, 255, 10%);
+      border-color: rgb(148, 163, 184, 28%);
+      transform: translateY(-1px);
+    }
+
+    .attachments-container {
+      padding: 16px 18px;
+      display: none;
+    }
+
+    .attachments-container.show {
+      display: grid;
+      gap: 10px;
+    }
+
+    .attachments-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--muted-panel);
+    }
+
+    .attachments {
+      display: grid;
+      gap: 8px;
+    }
+
+    .attachment-container {
+      display: grid;
+      gap: 8px;
+      background: var(--surface-strong);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+
+    .attachment-separator {
+      width: 100%;
+      height: 1px;
+      background: rgb(255, 255, 255, 12%);
+      margin: 8px 0;
+    }
+
+    .attachment-download {
+      flex: 0 0 auto;
+      margin-left: 12px;
+      width: 38px !important;
+      height: 38px;
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      background: rgb(255, 255, 255, 6%);
+      border: 1px solid rgb(255, 255, 255, 10%);
+      border-radius: 10px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 20px;
+      font-weight: 600;
+      cursor: pointer;
+      transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+    }
+
+    .attachment-download::before {
+      content: "↓";
+      transform: translateY(-1px);
+    }
+
+    .attachment-download:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .attachment-download:active {
+      transform: translateY(0);
+    }
+
+    .attachment-file {
+      display: block;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: var(--link);
+      text-decoration: none;
+    }
+
+    .attachment-file:hover {
+      text-decoration: underline;
+    }
+
+    .attachment-row {
+      display: flex;
+      flex-flow: row wrap;
+      align-items: center;
+      width: 100%;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .attachment-link {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgb(255, 255, 255, 4%);
+      border: 1px solid rgb(255, 255, 255, 8%);
+      border-radius: 12px;
+      padding: 10px 12px;
+      color: var(--link);
+      text-decoration: none;
+      font-size: 0.92rem;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .attachment-link:hover {
+      background: rgb(255, 255, 255, 7%);
+      border-color: rgb(255, 255, 255, 14%);
+      transform: translateY(-1px);
+    }
+
+    .attachment-link::before {
+      content: "🔗";
+      font-size: 0.9rem;
+    }
+
+    .pdf-container {
+      width: 100%;
+      position: relative;
+    }
+
+    .pdf-container:fullscreen {
+      background: var(--bg);
+      padding: 16px;
+    }
+
+    .pdf-controls {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pdf-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: rgb(255, 255, 255, 6%);
+      border: 1px solid rgb(255, 255, 255, 10%);
+      color: var(--text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition:
+        background 0.18s ease,
+        border-color 0.18s ease,
+        transform 0.18s ease;
+    }
+
+    .pdf-button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    .add-submission-btn {
+      background: linear-gradient(180deg,
+          var(--accent),
+          var(--accent-strong));
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition:
+        transform 0.18s ease,
+        filter 0.18s ease;
+      height: fit-content;
+      white-space: nowrap;
+      box-shadow: 0 10px 24px rgb(47, 106, 233, 28%);
+      width: 100%;
+    }
+
+    .add-submission-btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .material-viewer img {
+      max-width: 100%;
+      border-radius: 16px;
+    }
+
+    .doc-image {
+      max-width: 100%;
+      max-height: min(70vh, 700px);
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 16px;
+      cursor: zoom-in;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .image-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgb(0, 0, 0, 82%);
+      backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      cursor: zoom-out;
+    }
+
+    .image-lightbox.show {
+      display: flex;
+    }
+
+    .image-lightbox img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgb(0, 0, 0, 45%);
+    }
+
+    .image-lightbox-close {
+      position: fixed;
+      top: 18px;
+      right: 22px;
+      width: 40px;
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: rgb(255, 255, 255, 8%);
+      border: 1px solid rgb(255, 255, 255, 14%);
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer;
+    }
+
+    .image-lightbox-close:hover {
+      background: rgb(255, 255, 255, 16%);
+    }
+
+    embed {
+      width: 100%;
+      height: min(78vh, 900px);
+      border: 0;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .pdf-container:fullscreen embed {
+      height: calc(100vh - 70px);
+    }
+
+    iframe {
+      width: 100%;
+      height: min(78vh, 900px);
+      border: 0;
+      border-radius: 16px;
+      background: white;
+    }
+
+    .comment {
+      display: none;
+    }
+
+    .submission-modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      background: rgb(0, 0, 0, 55%);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .submission-modal {
+      width: min(880px, 100%);
+      max-height: min(92vh, 920px);
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgb(0, 0, 0, 45%);
+      overflow: hidden;
+    }
+
+    .submission-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      flex: 0 0 auto;
+    }
+
+    .submission-modal-header h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      font-weight: 750;
+      color: var(--text-strong);
+    }
+
+    .submission-modal-close {
+      width: 34px;
+      height: 34px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: rgb(255, 255, 255, 6%);
+      border: 1px solid rgb(255, 255, 255, 10%);
+      color: var(--text);
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.18s ease;
+    }
+
+    .submission-modal-close:hover {
+      background: rgb(255, 255, 255, 14%);
+    }
+
+    .submission-modal-body {
+      padding: 18px 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .submission-modal-tabs {
+      display: flex;
+      gap: 6px;
+      border-bottom: 1px solid var(--soft-border);
+      flex: 0 0 auto;
+    }
+
+    .submission-tab-btn {
+      appearance: none;
+      background: transparent;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--muted-panel);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transform: translateY(1px);
+      transition:
+        color 0.18s ease,
+        border-color 0.18s ease;
+    }
+
+    .submission-tab-btn:hover {
+      color: var(--text);
+    }
+
+    .submission-tab-btn.active {
+      color: var(--text-strong);
+      border-bottom-color: var(--link);
+    }
+
+    .submission-modal-panels {
+      flex: 1 1 auto;
+      display: flex;
+      min-height: 0;
+    }
+
+    .submission-tab-panel {
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1 1 auto;
+      min-height: 0;
+    }
+
+    .submission-tab-panel.active {
+      display: flex;
+    }
+
+    .submission-modal-section {
+      display: grid;
+      gap: 8px;
+    }
+
+    .submission-modal-section.submission-editor-section {
+      flex: 1 1 auto;
+      min-height: 320px;
+    }
+
+    .submission-modal-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      color: var(--muted-panel);
+    }
+
+    .submission-editor-wrapper {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 280px;
+      border: 1px solid var(--soft-border);
+      border-radius: 10px;
+      overflow: visible;
+      background: rgb(0, 0, 0, 22%);
+    }
+
+    .submission-editor-quill {
+      flex: 1 1 auto;
+      min-height: 0;
+      color: var(--text);
+    }
+
+    .submission-editor-wrapper .ql-toolbar.ql-snow {
+      background: var(--soft-panel);
+      border: none;
+      border-bottom: 1px solid var(--soft-border);
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+    }
+
+    .submission-editor-wrapper .ql-container.ql-snow {
+      border: none;
+      font-size: 0.98rem;
+      border-bottom-left-radius: 10px;
+      border-bottom-right-radius: 10px;
+      overflow: hidden;
+    }
+
+    .submission-editor-wrapper .ql-tooltip {
+      z-index: 20;
+    }
+
+    .submission-editor-wrapper .ql-editor {
+      min-height: 280px;
+      color: var(--text);
+    }
+
+    .submission-editor-wrapper .ql-editor.ql-blank::before {
+      color: var(--muted-panel);
+      font-style: normal;
+    }
+
+    .submission-editor-wrapper .ql-snow .ql-stroke {
+      stroke: var(--text);
+    }
+
+    .submission-editor-wrapper .ql-snow .ql-fill {
+      fill: var(--text);
+    }
+
+    .submission-editor-wrapper .ql-snow .ql-picker {
+      color: var(--text);
+    }
+
+    .submission-editor-wrapper .ql-snow .ql-picker-options {
+      background: var(--surface-strong, var(--surface));
+      border: 1px solid var(--soft-border);
+    }
+
+    .submission-editor-wrapper .ql-toolbar.ql-snow .ql-formats button:hover,
+    .submission-editor-wrapper .ql-toolbar.ql-snow .ql-formats .ql-active {
+      background: rgb(255, 255, 255, 10%);
+      border-radius: 6px;
+    }
+
+    .submission-file-input {
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .submission-attach-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .submission-drive-btn {
+      background: rgb(255, 255, 255, 6%);
+      border: 1px solid var(--soft-border);
+      border-radius: 10px;
+      padding: 7px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      transition:
+        background 0.18s ease,
+        border-color 0.18s ease;
+    }
+
+    .submission-drive-btn:hover {
+      background: rgb(255, 255, 255, 10%);
+    }
+
+    .submission-drive-btn:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .submission-file-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .submission-file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgb(255, 255, 255, 4%);
+      border: 1px solid rgb(255, 255, 255, 8%);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 0.88rem;
+    }
+
+    .submission-file-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      min-width: 0;
+    }
+
+    .submission-file-remove {
+      flex: 0 0 auto;
+      width: 26px;
+      height: 26px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      background: rgb(255, 255, 255, 6%);
+      border: 1px solid rgb(255, 255, 255, 10%);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .submission-file-remove:hover {
+      background: var(--late-bg);
+      border-color: var(--late-text);
+      color: var(--late-text);
+    }
+
+    .submission-comment-input {
+      width: 100%;
+      resize: vertical;
+      background: rgb(0, 0, 0, 22%);
+      border: 1px solid var(--soft-border);
+      border-radius: 10px;
+      padding: 8px 12px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 0.9rem;
+    }
+
+    .submission-modal-error {
+      color: var(--late-text);
+      font-size: 0.88rem;
+      min-height: 1em;
+    }
+
+    .submission-modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      flex: 0 0 auto;
+    }
+
+    .submission-modal-submit {
+      background: linear-gradient(180deg,
+          var(--accent),
+          var(--accent-strong));
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 18px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition:
+        transform 0.18s ease,
+        filter 0.18s ease;
+    }
+
+    .submission-modal-submit:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .submission-modal-submit:disabled {
+      opacity: 0.6;
+      cursor: default;
+      transform: none;
+    }
+
+    @media (width <=640px) {
+      .submission-modal-overlay {
+        align-items: flex-start;
+        padding: 12px;
+        overflow-y: auto;
+      }
+
+      .submission-modal {
+        max-height: 96vh;
+        width: 100%;
+      }
+
+      .submission-modal-section.submission-editor-section {
+        min-height: 220px;
+      }
+
+      .submission-editor-wrapper,
+      .submission-editor-wrapper .ql-editor {
+        min-height: 200px;
+      }
+    }
+
+    @media (width <=960px) {
+      .content-row {
+        grid-template-columns: 1fr;
+      }
+
+      .submissions-row {
+        grid-template-columns: 1fr;
+      }
+
+      .add-submission-btn {
+        width: 100%;
+      }
+
+      .right-panel {
+        align-items: flex-start;
+        min-width: 0;
+      }
+
+      .grade {
+        text-align: left;
+        width: 100%;
+      }
+    }
+
+    @media (width <=640px) {
+      .page {
+        width: 100%;
+        padding-top: 16px;
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      .panels {
+        grid-template-columns: 1fr;
+      }
+
+      .panels,
+      .description,
+      .submissions-container {
+        padding: 16px;
+      }
+
+      .right-panel {
+        min-width: 0;
+      }
+
+      .header h2 {
+        font-size: 1.45rem;
+      }
+
+      .file-wrapper {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .download-btn {
+        text-align: center;
+      }
+
+      embed,
+      iframe {
+        height: 70vh;
+      }
+    }
+  </style>
 </head>
 
 <body class="app-page app-page--material">
-    <div class="page">
-        <div class="header">
-            <a id="back-btn" class="back-btn" href="#">&larr; Back</a>
-            <a class="settings-link" href="/settings">Settings</a>
-            <h2 id="title"></h2>
-        </div>
-
-        <div id="material-viewer" class="material-viewer"></div>
+  <div class="page">
+    <div class="header">
+      <a id="back-btn" class="back-btn" href="#">&larr; Back</a>
+      <a class="settings-link" href="/settings">Settings</a>
+      <h2 id="title"></h2>
     </div>
 
-    <div class="image-lightbox" id="image-lightbox">
-        <button class="image-lightbox-close" id="image-lightbox-close" type="button" title="Close">&times;</button>
-        <img id="image-lightbox-img" src="" alt="" />
-    </div>
+    <div id="material-viewer" class="material-viewer"></div>
+  </div>
 
+  <div class="image-lightbox" id="image-lightbox">
+    <button class="image-lightbox-close" id="image-lightbox-close" type="button" title="Close">
+      &times;
+    </button>
+    <img id="image-lightbox-img" src="" alt="" />
+  </div>
 
-    <script>
-        const pagePath = window.location.pathname
-        const pathSegments = pagePath.split("/").filter(Boolean)
+  <script>
+    const pagePath = window.location.pathname
+    const pathSegments = pagePath.split("/").filter(Boolean)
 
-        const sectionId = pathSegments[1]
-        const folderId = pathSegments[3]
-        const materialId = pathSegments[5]
+    const sectionId = pathSegments[1]
+    const folderId = pathSegments[3]
+    const materialId = pathSegments[5]
 
+    const GOOGLE_CLIENT_ID = "466718827887-ba34lhui574u9uuai8omhlle58154dbq.apps.googleusercontent.com"
+    const GOOGLE_API_KEY = "AIzaSyDeooSWvTaOAXgRznsXz6QMA1Uu8E1_zGc"
 
-        const GOOGLE_CLIENT_ID = "466718827887-ba34lhui574u9uuai8omhlle58154dbq.apps.googleusercontent.com"
-        const GOOGLE_API_KEY = "AIzaSyDeooSWvTaOAXgRznsXz6QMA1Uu8E1_zGc"
+    const backHref = folderId && folderId !== "root" ? `/section/${sectionId}?folder=${encodeURIComponent(folderId)}` : `/section/${sectionId}`
 
+    document.getElementById("back-btn").href = backHref;
 
-        const backHref = folderId && folderId !== "root" ? `/section/${sectionId}?folder=${encodeURIComponent(folderId)}` : `/section/${sectionId}`
+    ["dragover", "drop"].forEach((eventName) => {
+      window.addEventListener(eventName, (event) => {
+        event.preventDefault()
+      })
+    })
 
-        document.getElementById("back-btn").href = backHref
+    const lightbox = document.getElementById("image-lightbox")
+    const lightboxImage = document.getElementById("image-lightbox-img")
+    const lightboxCloseButton = document.getElementById(
+      "image-lightbox-close",
+    )
 
-            ;["dragover", "drop"].forEach((eventName) => {
-                window.addEventListener(eventName, (event) => {
-                    event.preventDefault()
-                })
-            })
+    function openLightbox(src, alt) {
+      lightboxImage.src = src
+      lightboxImage.alt = alt || ""
+      lightbox.classList.add("show")
+    }
 
-        const lightbox = document.getElementById("image-lightbox")
-        const lightboxImage = document.getElementById("image-lightbox-img")
-        const lightboxCloseButton = document.getElementById("image-lightbox-close")
+    function closeLightbox() {
+      lightbox.classList.remove("show")
+      lightboxImage.src = ""
+    }
 
-        function openLightbox(src, alt) {
-            lightboxImage.src = src
-            lightboxImage.alt = alt || ""
-            lightbox.classList.add("show")
+    lightbox.addEventListener("click", (event) => {
+      if (event.target === lightbox) {
+        closeLightbox()
+      }
+    })
+
+    lightboxCloseButton.addEventListener("click", closeLightbox)
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closeLightbox()
+      }
+    })
+
+    function getRelativeDueLabel(dueDate) {
+      if (dueDate.getTime() <= Date.now()) {
+        return ""
+      }
+
+      // Compare calendar days (local time), not raw 24h differences
+      const startOfDay = (d) =>
+        new Date(d.getFullYear(), d.getMonth(), d.getDate())
+      const dayDiff = Math.round(
+        (startOfDay(dueDate) - startOfDay(new Date())) / 86400000,
+      )
+      const weekday = dueDate.toLocaleDateString(undefined, {
+        weekday: "long",
+      })
+
+      if (dayDiff === 0) {
+        return "Today"
+      }
+      if (dayDiff === 1) {
+        return "Tomorrow"
+      }
+      if (dayDiff >= 2 && dayDiff <= 6) {
+        return weekday
+      }
+      if (dayDiff >= 7 && dayDiff <= 13) {
+        return `Next ${weekday}`
+      }
+
+      return ""
+    }
+
+    function formatMilliseconds(milliseconds) {
+      const totalSeconds = Math.floor(milliseconds / 1000)
+      const days = Math.floor(totalSeconds / 86400)
+      const hours = Math.floor(totalSeconds % 86400 / 3600)
+      const minutes = Math.floor(totalSeconds % 3600 / 60)
+      const seconds = totalSeconds % 60
+
+      const durationParts = []
+
+      if (days) {
+        durationParts.push(`${days}d`)
+        durationParts.push(`${String(hours).padStart(2, "0")}h`)
+        durationParts.push(`${String(minutes).padStart(2, "0")}m`)
+        durationParts.push(`${String(seconds).padStart(2, "0")}s`)
+      }
+      else if (hours) {
+        durationParts.push(`${hours}h`)
+        durationParts.push(`${String(minutes).padStart(2, "0")}m`)
+        durationParts.push(`${String(seconds).padStart(2, "0")}s`)
+      }
+      else if (minutes) {
+        durationParts.push(`${minutes}m`)
+        durationParts.push(`${String(seconds).padStart(2, "0")}s`)
+      }
+      else if (seconds) {
+        durationParts.push(`${String(seconds).padStart(2, "0")}s`)
+      }
+
+      return durationParts.join(" ") || "0s"
+    }
+
+    async function loadMaterial() {
+      const response = await fetchWithRetry(
+        `/api/section/${sectionId}/folder/${folderId}/material/${materialId}`,
+      )
+      const materialResponse = await response.json()
+      const material = materialResponse.material
+
+      const textarea = document.createElement("textarea")
+
+      textarea.innerHTML = material.title
+      textarea.innerHTML = textarea.value
+
+      document.getElementById("title").textContent = textarea.value
+
+      const materialType = material.type
+      const materialViewer = document.getElementById("material-viewer")
+      materialViewer.innerHTML = ""
+
+      if (materialType === "document") {
+        const documentType = material.documentType
+
+        if (documentType === "file") {
+          displayFile(material, materialViewer)
+        }
+        else if (documentType === "link") {
+          const linkUrl = material.url
+          const documentLink = document.createElement("a")
+          documentLink.href = linkUrl
+          documentLink.textContent = linkUrl
+          materialViewer.appendChild(documentLink)
+
+          const iframe = document.createElement("iframe")
+          iframe.src = linkUrl
+          iframe.loading = "lazy"
+          iframe.allow = "fullscreen"
+          materialViewer.appendChild(iframe)
+        }
+        else if (documentType === "video") {
+          const linkUrl = material.url
+          const documentLink = document.createElement("a")
+          documentLink.href = linkUrl
+          documentLink.textContent = linkUrl
+          materialViewer.appendChild(documentLink)
+        }
+      }
+      else if (materialType === "page") {
+        materialViewer.innerHTML = material.description
+      }
+      else if (materialType === "assignment") {
+        const assignmentTemplate = document.getElementById(
+          "assignment-template",
+        )
+        const assignmentClone = assignmentTemplate.content.cloneNode(true)
+
+        assignmentClone.querySelector(".category").textContent = `Category: ${material.category}`
+
+        const gradeScoreElement = assignmentClone.querySelector(".grade-score")
+        let grade
+
+        if (material.grade) {
+          grade = material.grade
         }
 
-        function closeLightbox() {
-            lightbox.classList.remove("show")
-            lightboxImage.src = ""
+        gradeScoreElement.textContent = `Grade: ${material.gradeException ? `${material.gradeException} ` : ""}${grade ? grade : "_"}${material.maxPoints ? `/${material.maxPoints}` : ""}`
+
+        const gradeComment = assignmentClone.querySelector(".grade-comment")
+        if (material.comment) {
+          gradeComment.textContent = `Comment: ${material.comment}`
+        }
+        else {
+          gradeComment.style.display = "none"
         }
 
-        lightbox.addEventListener("click", (event) => {
-            if (event.target === lightbox) {
-                closeLightbox()
-            }
-        })
-
-        lightboxCloseButton.addEventListener("click", closeLightbox)
-
-        document.addEventListener("keydown", (event) => {
-            if (event.key === "Escape") {
-                closeLightbox()
-            }
-        })
-
-        function getRelativeDueLabel(dueDate) {
-            if (dueDate.getTime() <= Date.now()) {
-                return ""
-            }
-
-            // Compare calendar days (local time), not raw 24h differences
-            const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate())
-            const dayDiff = Math.round((startOfDay(dueDate) - startOfDay(new Date())) / 86400000)
-            const weekday = dueDate.toLocaleDateString(undefined, { weekday: "long" })
-
-            if (dayDiff === 0) {
-                return "Today"
-            }
-            if (dayDiff === 1) {
-                return "Tomorrow"
-            }
-            if (dayDiff >= 2 && dayDiff <= 6) {
-                return weekday
-            }
-            if (dayDiff >= 7 && dayDiff <= 13) {
-                return `Next ${weekday}`
-            }
-
-            return ""
+        const descriptionElement = assignmentClone.querySelector(
+          ".description-content",
+        )
+        if (material.description) {
+          descriptionElement.innerHTML = linkify(
+            stripInlineColors(material.description),
+          )
+        }
+        else {
+          descriptionElement.textContent = "No description"
         }
 
-        function formatMilliseconds(milliseconds) {
-            const totalSeconds = Math.floor(milliseconds / 1000)
-            const days = Math.floor(totalSeconds / 86400)
-            const hours = Math.floor(totalSeconds % 86400 / 3600)
-            const minutes = Math.floor(totalSeconds % 3600 / 60)
-            const seconds = totalSeconds % 60
+        const attachmentListContainer = assignmentClone.querySelector(
+          ".attachments-container",
+        )
+        if (material.attachments?.length) {
+          attachmentListContainer.classList.add("show")
+          const attachmentsList = assignmentClone.querySelector(".attachments")
 
-            const durationParts = []
+          for (const attachment of material.attachments) {
+            const attachmentContainer = document.createElement("div")
+            attachmentContainer.className = "attachment-container"
 
-            if (days) {
-                durationParts.push(`${days}d`)
-                durationParts.push(`${String(hours).padStart(2, "0")}h`)
-                durationParts.push(`${String(minutes).padStart(2, "0")}m`)
-                durationParts.push(`${String(seconds).padStart(2, "0")}s`)
+            if (attachment.type === "link") {
+              const linkElement = document.createElement("a")
+              linkElement.className = "attachment-link"
+              linkElement.href = attachment.url
+              linkElement.textContent = attachment.title
+              linkElement.target = "_blank"
+              linkElement.rel = "noopener noreferrer"
+              attachmentContainer.appendChild(linkElement)
             }
-            else if (hours) {
-                durationParts.push(`${hours}h`)
-                durationParts.push(`${String(minutes).padStart(2, "0")}m`)
-                durationParts.push(`${String(seconds).padStart(2, "0")}s`)
-            }
-            else if (minutes) {
-                durationParts.push(`${minutes}m`)
-                durationParts.push(`${String(seconds).padStart(2, "0")}s`)
-            }
-            else if (seconds) {
-                durationParts.push(`${String(seconds).padStart(2, "0")}s`)
-            }
-
-            return durationParts.join(" ") || "0s"
-        }
-
-        async function loadMaterial() {
-            const response = await fetchWithRetry(`/api/section/${sectionId}/folder/${folderId}/material/${materialId}`)
-            const materialResponse = await response.json()
-            const material = materialResponse.material
-
-            const textarea = document.createElement("textarea")
-
-            textarea.innerHTML = material.title
-            textarea.innerHTML = textarea.value
-
-            document.getElementById("title").textContent = textarea.value
-
-            const materialType = material.type
-            const materialViewer = document.getElementById("material-viewer")
-            materialViewer.innerHTML = ""
-
-            if (materialType === "document") {
-                const documentType = material.documentType
-
-                if (documentType === "file") {
-                    displayFile(material, materialViewer)
-                }
-                else if (documentType === "link") {
-                    const linkUrl = material.url
-                    const documentLink = document.createElement("a")
-                    documentLink.href = linkUrl
-                    documentLink.textContent = linkUrl
-                    materialViewer.appendChild(documentLink)
-
-                    const iframe = document.createElement("iframe")
-                    iframe.src = linkUrl
-                    iframe.loading = "lazy"
-                    iframe.allow = "fullscreen"
-                    materialViewer.appendChild(iframe)
-                }
-                else if (documentType === "video") {
-                    const linkUrl = material.url
-                    const documentLink = document.createElement("a")
-                    documentLink.href = linkUrl
-                    documentLink.textContent = linkUrl
-                    materialViewer.appendChild(documentLink)
-                }
-            }
-            else if (materialType === "page") {
-                materialViewer.innerHTML = material.description
-            }
-            else if (materialType === "assignment") {
-                const assignmentTemplate = document.getElementById("assignment-template")
-                const assignmentClone = assignmentTemplate.content.cloneNode(true)
-
-                assignmentClone.querySelector(".category").textContent = `Category: ${material.category}`
-
-                const gradeScoreElement = assignmentClone.querySelector(".grade-score")
-                let grade
-
-                if (material.grade) {
-                    grade = material.grade
-                }
-
-
-                gradeScoreElement.textContent = `Grade: ${material.gradeException ? `${material.gradeException} ` : ""}${grade ? grade : "_"}${material.maxPoints ? `/${material.maxPoints}` : ""}`
-
-                const gradeComment = assignmentClone.querySelector(".grade-comment")
-                if (material.comment) {
-                    gradeComment.textContent = `Comment: ${material.comment}`
-                }
-                else {
-                    gradeComment.style.display = "none"
-                }
-
-                const descriptionElement = assignmentClone.querySelector(".description-content")
-                if (material.description) {
-                    descriptionElement.innerHTML = linkify(stripInlineColors(material.description))
-                }
-                else {
-                    descriptionElement.textContent = "No description"
-                }
-
-                const attachmentListContainer = assignmentClone.querySelector(".attachments-container")
-                if (material.attachments?.length) {
-                    attachmentListContainer.classList.add("show")
-                    const attachmentsList = assignmentClone.querySelector(".attachments")
-
-                    for (const attachment of material.attachments) {
-                        const attachmentContainer = document.createElement("div")
-                        attachmentContainer.className = "attachment-container"
-
-                        if (attachment.type === "link") {
-                            const linkElement = document.createElement("a")
-                            linkElement.className = "attachment-link"
-                            linkElement.href = attachment.url
-                            linkElement.textContent = attachment.title
-                            linkElement.target = "_blank"
-                            linkElement.rel = "noopener noreferrer"
-                            attachmentContainer.appendChild(linkElement)
-                        }
-                        else if (attachment.type === "file") {
-                            const attachmentRow = document.createElement("div")
-                            attachmentRow.className = "attachment-row"
-
-                            const fileElement = document.createElement("a")
-                            fileElement.className = "attachment-file"
-                            fileElement.href = "/api/file?url=" + encodeURIComponent(attachment.url)
-                            fileElement.textContent = attachment.title
-
-                            const downloadButton = document.createElement("a")
-                            downloadButton.className = "attachment-download"
-                            downloadButton.href = attachment.url
-                            downloadButton.download = ""
-                            downloadButton.title = "Download"
-
-                            attachmentRow.appendChild(fileElement)
-                            attachmentRow.appendChild(downloadButton)
-                            attachmentContainer.appendChild(attachmentRow)
-
-                            const separator = document.createElement("div")
-                            separator.className = "attachment-separator"
-                            attachmentContainer.appendChild(separator)
-
-                            displayFile({
-                                type: "file",
-                                fileUrl: attachment.url,
-                                extension: attachment.extension
-                            }, attachmentContainer)
-                        }
-
-                        attachmentsList.appendChild(attachmentContainer)
-                    }
-                }
-
-                const dueDate = new Date(material.dueDate)
-                const relativeLabel = getRelativeDueLabel(dueDate)
-                assignmentClone.querySelector(".due-date-text").textContent = dueDate.getTime() === 0 ? "Date: not set" : `Due: ${relativeLabel ? `${relativeLabel} · ` : ""}${dueDate.toLocaleString()}`
-
-                const countdownElement = assignmentClone.querySelector(".due-date-countdown")
-                let countDownInterval
-
-                function updateCountdown() {
-                    const now = new Date()
-                    const timeDifference = dueDate - now
-
-                    if (timeDifference <= 0) {
-                        countdownElement.textContent = "Time Left: Time's up!"
-                        clearInterval(countDownInterval)
-                        return
-                    }
-
-                    countdownElement.textContent = `Time Left: ${formatMilliseconds(timeDifference)}`
-                }
-
-                if (dueDate.getTime()) {
-                    countDownInterval = setInterval(updateCountdown, 1000)
-                    updateCountdown()
-                    window.addEventListener("beforeunload", () => {
-                        clearInterval(countDownInterval)
-                    })
-                }
-                else {
-                    countdownElement.style.display = "none"
-                }
-
-                const assignmentType = material.assignmentType
-                if (assignmentType === "document") {
-                    const documentUrl = material.documentUrl
-                    const documentIframe = document.createElement("iframe")
-                    documentIframe.src = documentUrl
-                    assignmentClone.appendChild(documentIframe)
-                }
-                else if (assignmentType === "default") {
-                    const addSubmissionBtn = assignmentClone.querySelector(".add-submission-btn")
-                    addSubmissionBtn.addEventListener("click", () => {
-                        openSubmissionModal(material.id)
-                    })
-
-                    const submissionsElement = assignmentClone.querySelector(".submissions")
-                    const submissions = material.submissions
-
-                    const submissionTemplate = document.getElementById("submission-template")
-                    const fileTemplate = document.getElementById("file-template")
-                    const htmlTemplate = document.getElementById("html-template")
-
-                    let addedAssignment = false
-
-                    if (submissions?.length) {
-                        submissions.sort((submissionOne, submissionTwo) => submissionOne.id - submissionTwo.id)
-
-                        const results = await Promise.all(
-                            submissions.map(async (submission, index) => {
-                                if (submission.type === "draft") {
-                                    return {
-                                        type: "draft",
-                                        index,
-                                        html: submission.draft_html,
-                                        late: submission.late,
-                                    }
-                                }
-
-                                addedAssignment = true
-
-                                const fileUrl = submission.fileUrl
-
-                                const fileResponse = await fetchWithRetry(
-                                    `/api/file?url=${encodeURIComponent(fileUrl)}`
-                                )
-
-                                let fileName = "file"
-                                const contentDisposition = fileResponse.headers.get("Content-Disposition")
-
-                                if (contentDisposition) {
-                                    const match = contentDisposition.match(/filename="?([^"]+)"?/)
-                                    if (match) {
-                                        fileName = decodeURIComponent(match[1])
-                                    }
-                                }
-
-                                if (fileUrl.endsWith(".html")) {
-                                    const html = await fileResponse.text()
-                                    return {
-                                        type: "html",
-                                        index,
-                                        fileUrl,
-                                        html,
-                                        late: submission.late,
-                                    }
-                                }
-
-                                const blob = await fileResponse.blob()
-                                const objectUrl = URL.createObjectURL(blob)
-
-                                return {
-                                    type: "file",
-                                    index,
-                                    fileUrl,
-                                    fileName,
-                                    objectUrl,
-                                    late: submission.late,
-                                }
-                            })
-                        )
-
-                        const renderedResults = results.filter((result) => result.type !== "draft")
-
-                        renderedResults.forEach((result, index) => {
-                            const submissionClone = submissionTemplate.content.cloneNode(true)
-
-                            const link = submissionClone.querySelector(".submission-link")
-                            const lateText = submissionClone.querySelector(".late-text")
-                            const content = submissionClone.querySelector(".submission-content")
-
-                            link.textContent = `Submission ${index + 1}`
-                            link.href = result.fileUrl
-
-                            if (result.late) {
-                                lateText.textContent = "LATE"
-                                lateText.classList.add("show")
-                            }
-
-                            if (result.type === "html") {
-                                const htmlClone = htmlTemplate.content.cloneNode(true)
-                                const viewer = htmlClone.querySelector(".submission-viewer")
-                                viewer.innerHTML = result.html
-                                content.appendChild(htmlClone)
-                            }
-                            else {
-                                const fileClone = fileTemplate.content.cloneNode(true)
-                                const nameLabel = fileClone.querySelector(".file-name")
-                                const downloadButton = fileClone.querySelector(".download-btn")
-
-                                nameLabel.textContent = result.fileName
-                                downloadButton.href = result.objectUrl
-                                downloadButton.download = result.fileName
-
-                                content.appendChild(fileClone)
-                            }
-
-                            submissionsElement.appendChild(submissionClone)
-                        })
-                    }
-                    else if (!material.canBeTurnedIn) {
-                        assignmentClone.querySelector(".submissions-row").style.display = "none"
-                    }
-                    if (!addedAssignment) {
-                        assignmentClone.querySelector(".submissions-container").style.display = "none"
-                    }
-                }
-
-                materialViewer.appendChild(assignmentClone)
-            }
-        }
-
-        loadMaterial()
-
-        function displayFile(file, fileViewer) {
-            const fileUrl = file.fileUrl
-            const fileExtension = file.extension?.toLowerCase()
-
-            if (file.type === "link") {
-                const documentIframe = document.createElement("iframe")
-                documentIframe.src = fileUrl
-                fileViewer.appendChild(documentIframe)
-            }
-            else if (["png", "jpg", "jpeg", "gif", "webp"].includes(fileExtension)) {
-                const imageSource = `/api/file?url=${encodeURIComponent(fileUrl)}`
-                const documentImage = document.createElement("img")
-                documentImage.className = "doc-image"
-                documentImage.src = imageSource
-                documentImage.alt = file.title || ""
-                documentImage.addEventListener("click", () => openLightbox(imageSource, documentImage.alt))
-                fileViewer.appendChild(documentImage)
-            }
-            else if (fileExtension === "pdf") {
-                const pdfContainer = document.createElement("div")
-                pdfContainer.className = "pdf-container"
-
-                const pdfControls = document.createElement("div")
-                pdfControls.className = "pdf-controls"
-
-                const pdfUrl = `/api/file?url=${encodeURIComponent(fileUrl)}`
-
-                const openButton = document.createElement("a")
-                openButton.className = "pdf-button"
-                openButton.href = pdfUrl
-                openButton.target = "_blank"
-                openButton.rel = "noopener noreferrer"
-                openButton.textContent = "↗ Open in new tab"
-
-                const fullscreenButton = document.createElement("button")
-                fullscreenButton.className = "pdf-button"
-                fullscreenButton.type = "button"
-                fullscreenButton.textContent = "⛶ Fullscreen"
-
-                const documentEmbed = document.createElement("embed")
-                documentEmbed.src = pdfUrl
-                documentEmbed.type = "application/pdf"
-
-                fullscreenButton.addEventListener("click", async () => {
-                    if (!document.fullscreenElement) {
-                        await pdfContainer.requestFullscreen()
-                        fullscreenButton.textContent = "⛶ Exit fullscreen"
-                    }
-                    else {
-                        await document.exitFullscreen()
-                        fullscreenButton.textContent = "⛶ Fullscreen"
-                    }
-                })
-
-                document.addEventListener("fullscreenchange", () => {
-                    if (!document.fullscreenElement) {
-                        fullscreenButton.textContent = "⛶ Fullscreen"
-                    }
-                })
-
-                pdfControls.appendChild(openButton)
-                pdfControls.appendChild(fullscreenButton)
-
-                pdfContainer.appendChild(pdfControls)
-                pdfContainer.appendChild(documentEmbed)
-                fileViewer.appendChild(pdfContainer)
-            }
-            else if (["mp4"].includes(fileExtension)) {
-                const documentVideo = document.createElement("video")
-                documentVideo.src = `/api/file?url=${encodeURIComponent(fileUrl)}`
-                documentVideo.controls = true
-                documentVideo.playsInline = true
-                documentVideo.preload = "metadata"
-                fileViewer.appendChild(documentVideo)
-            }
-            else {
-                const documentIframe = document.createElement("iframe")
-                documentIframe.src = `/api/file?url=${encodeURIComponent(fileUrl)}`
-                fileViewer.appendChild(documentIframe)
-            }
-        }
-
-        function linkify(html) {
-            const container = document.createElement("div")
-            container.innerHTML = html
-
-            const urlRegex = /https?:\/\/[^\s<>"']+/g
-
-            const walker = document.createTreeWalker(
-                container,
-                NodeFilter.SHOW_TEXT,
+            else if (attachment.type === "file") {
+              const attachmentRow = document.createElement("div")
+              attachmentRow.className = "attachment-row"
+
+              const fileElement = document.createElement("a")
+              fileElement.className = "attachment-file"
+              fileElement.href = "/api/file?url=" + encodeURIComponent(attachment.url)
+              fileElement.textContent = attachment.title
+
+              const downloadButton = document.createElement("a")
+              downloadButton.className = "attachment-download"
+              downloadButton.href = attachment.url
+              downloadButton.download = ""
+              downloadButton.title = "Download"
+
+              attachmentRow.appendChild(fileElement)
+              attachmentRow.appendChild(downloadButton)
+              attachmentContainer.appendChild(attachmentRow)
+
+              const separator = document.createElement("div")
+              separator.className = "attachment-separator"
+              attachmentContainer.appendChild(separator)
+
+              displayFile(
                 {
-                    acceptNode(node) {
-                        return node.parentElement?.closest("a") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
-                    }
-                }
+                  type: "file",
+                  fileUrl: attachment.url,
+                  extension: attachment.extension,
+                },
+                attachmentContainer,
+              )
+            }
+
+            attachmentsList.appendChild(attachmentContainer)
+          }
+        }
+
+        const dueDate = new Date(material.dueDate)
+        const relativeLabel = getRelativeDueLabel(dueDate)
+        assignmentClone.querySelector(".due-date-text").textContent = dueDate.getTime() === 0 ? "Date: not set" : `Due: ${relativeLabel ? `${relativeLabel} · ` : ""}${dueDate.toLocaleString()}`
+
+        const countdownElement = assignmentClone.querySelector(
+          ".due-date-countdown",
+        )
+        let countDownInterval
+
+        function updateCountdown() {
+          const now = new Date()
+          const timeDifference = dueDate - now
+
+          if (timeDifference <= 0) {
+            countdownElement.textContent = "Time Left: Time's up!"
+            clearInterval(countDownInterval)
+            return
+          }
+
+          countdownElement.textContent = `Time Left: ${formatMilliseconds(timeDifference)}`
+        }
+
+        if (dueDate.getTime()) {
+          countDownInterval = setInterval(updateCountdown, 1000)
+          updateCountdown()
+          window.addEventListener("beforeunload", () => {
+            clearInterval(countDownInterval)
+          })
+        }
+        else {
+          countdownElement.style.display = "none"
+        }
+
+        const assignmentType = material.assignmentType
+        if (assignmentType === "document") {
+          const documentUrl = material.documentUrl
+          const documentIframe = document.createElement("iframe")
+          documentIframe.src = documentUrl
+          assignmentClone.appendChild(documentIframe)
+        }
+        else if (assignmentType === "default") {
+          const addSubmissionBtn = assignmentClone.querySelector(
+            ".add-submission-btn",
+          )
+          addSubmissionBtn.addEventListener("click", () => {
+            openSubmissionModal(material.id)
+          })
+
+          const submissionsElement = assignmentClone.querySelector(".submissions")
+          const submissions = material.submissions
+
+          const submissionTemplate = document.getElementById(
+            "submission-template",
+          )
+          const fileTemplate = document.getElementById("file-template")
+          const htmlTemplate = document.getElementById("html-template")
+
+          let addedAssignment = false
+
+          if (submissions?.length) {
+            submissions.sort(
+              (submissionOne, submissionTwo) =>
+                submissionOne.id - submissionTwo.id,
             )
 
-            const textNodes = []
-            let currentNode
-            while (currentNode = walker.nextNode()) {
-                textNodes.push(currentNode)
-            }
-
-            for (const textNode of textNodes) {
-                const text = textNode.nodeValue
-                if (!urlRegex.test(text)) {
-                    continue
+            const results = await Promise.all(
+              submissions.map(async (submission, index) => {
+                if (submission.type === "draft") {
+                  return {
+                    type: "draft",
+                    index,
+                    html: submission.draft_html,
+                    late: submission.late,
+                  }
                 }
 
-                urlRegex.lastIndex = 0
+                addedAssignment = true
 
-                const fragment = document.createDocumentFragment()
-                let lastIndex = 0
-                let match
+                const fileUrl = submission.fileUrl
 
-                while (match = urlRegex.exec(text)) {
-                    const rawUrl = match[0]
-                    const cleanUrl = rawUrl.replace(/[),.]+$/, "")
-                    const trailingUrlText = rawUrl.slice(cleanUrl.length)
-
-                    if (match.index > lastIndex) {
-                        fragment.appendChild(
-                            document.createTextNode(text.slice(lastIndex, match.index))
-                        )
-                    }
-
-                    const linkElement = document.createElement("a")
-                    linkElement.href = cleanUrl
-                    linkElement.target = "_blank"
-                    linkElement.rel = "noopener noreferrer"
-                    linkElement.textContent = cleanUrl
-                    fragment.appendChild(linkElement)
-
-                    if (trailingUrlText) {
-                        fragment.appendChild(document.createTextNode(trailingUrlText))
-                    }
-
-                    lastIndex = match.index + rawUrl.length
-                }
-
-                if (lastIndex < text.length) {
-                    fragment.appendChild(document.createTextNode(text.slice(lastIndex)))
-                }
-
-                textNode.replaceWith(fragment)
-            }
-
-            return container.innerHTML
-        }
-
-        let submissionLibsPromise = null
-
-        function loadScriptOnce(src) {
-            return new Promise((resolve, reject) => {
-                if (document.querySelector(`script[src="${src}"]`)) {
-                    resolve()
-                    return
-                }
-                const script = document.createElement("script")
-                script.src = src
-                script.onload = () => resolve()
-                script.onerror = () => reject(new Error(`Failed to load script: ${src}`))
-                document.head.appendChild(script)
-            })
-        }
-
-        function loadStyleOnce(href) {
-            return new Promise((resolve, reject) => {
-                if (document.querySelector(`link[href="${href}"]`)) {
-                    resolve()
-                    return
-                }
-                const link = document.createElement("link")
-                link.rel = "stylesheet"
-                link.href = href
-                link.onload = () => resolve()
-                link.onerror = () => reject(new Error(`Failed to load stylesheet: ${href}`))
-                document.head.appendChild(link)
-            })
-        }
-
-        function ensureSubmissionLibsLoaded() {
-            if (!submissionLibsPromise) {
-                submissionLibsPromise = Promise.all([
-                    loadStyleOnce("https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css"),
-                    loadScriptOnce("https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js"),
-                    loadScriptOnce("https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"),
-                ])
-            }
-            return submissionLibsPromise
-        }
-
-
-        let googleDriveLibsPromise = null
-        let googleTokenClient = null
-        let googleAccessToken = null
-
-        function ensureGoogleDriveLoaded() {
-            if (!googleDriveLibsPromise) {
-                googleDriveLibsPromise = Promise.all([
-                    loadScriptOnce("https://accounts.google.com/gsi/client"),
-                    loadScriptOnce("https://apis.google.com/js/api.js"),
-                ]).then(
-                    () =>
-                        new Promise((resolve, reject) => {
-                            gapi.load("picker", {
-                                callback: resolve,
-                                onerror: () => reject(new Error("Failed to load Google Picker")),
-                            })
-                        })
+                const fileResponse = await fetchWithRetry(
+                  `/api/file?url=${encodeURIComponent(fileUrl)}`,
                 )
-            }
-            return googleDriveLibsPromise
+
+                let fileName = "file"
+                const contentDisposition = fileResponse.headers.get(
+                  "Content-Disposition",
+                )
+
+                if (contentDisposition) {
+                  const match = contentDisposition.match(/filename="?([^"]+)"?/)
+                  if (match) {
+                    fileName = decodeURIComponent(match[1])
+                  }
+                }
+
+                if (fileUrl.endsWith(".html")) {
+                  const html = await fileResponse.text()
+                  return {
+                    type: "html",
+                    index,
+                    fileUrl,
+                    html,
+                    late: submission.late,
+                  }
+                }
+
+                const blob = await fileResponse.blob()
+                const objectUrl = URL.createObjectURL(blob)
+
+                return {
+                  type: "file",
+                  index,
+                  fileUrl,
+                  fileName,
+                  objectUrl,
+                  late: submission.late,
+                }
+              }),
+            )
+
+            const renderedResults = results.filter(
+              (result) => result.type !== "draft",
+            )
+
+            renderedResults.forEach((result, index) => {
+              const submissionClone = submissionTemplate.content.cloneNode(true)
+
+              const link = submissionClone.querySelector(".submission-link")
+              const lateText = submissionClone.querySelector(".late-text")
+              const content = submissionClone.querySelector(
+                ".submission-content",
+              )
+
+              link.textContent = `Submission ${index + 1}`
+              link.href = result.fileUrl
+
+              if (result.late) {
+                lateText.textContent = "LATE"
+                lateText.classList.add("show")
+              }
+
+              if (result.type === "html") {
+                const htmlClone = htmlTemplate.content.cloneNode(true)
+                const viewer = htmlClone.querySelector(".submission-viewer")
+                viewer.innerHTML = result.html
+                content.appendChild(htmlClone)
+              }
+              else {
+                const fileClone = fileTemplate.content.cloneNode(true)
+                const nameLabel = fileClone.querySelector(".file-name")
+                const downloadButton = fileClone.querySelector(".download-btn")
+
+                nameLabel.textContent = result.fileName
+                downloadButton.href = result.objectUrl
+                downloadButton.download = result.fileName
+
+                content.appendChild(fileClone)
+              }
+
+              submissionsElement.appendChild(submissionClone)
+            })
+          }
+          else if (!material.canBeTurnedIn) {
+            assignmentClone.querySelector(".submissions-row").style.display = "none"
+          }
+          if (!addedAssignment) {
+            assignmentClone.querySelector(
+              ".submissions-container",
+            ).style.display = "none"
+          }
         }
 
+        materialViewer.appendChild(assignmentClone)
+      }
+    }
 
-        function requestGoogleAccessToken() {
-            return new Promise((resolve, reject) => {
-                if (!googleTokenClient) {
-                    googleTokenClient = google.accounts.oauth2.initTokenClient({
-                        client_id: GOOGLE_CLIENT_ID,
-                        scope: "https://www.googleapis.com/auth/drive.file",
-                        callback: () => { },
-                    })
-                }
+    loadMaterial()
 
-                googleTokenClient.callback = (tokenResponse) => {
-                    if (tokenResponse.error) {
-                        reject(new Error(tokenResponse.error))
-                        return
-                    }
-                    googleAccessToken = tokenResponse.access_token
-                    resolve(googleAccessToken)
-                }
-                googleTokenClient.error_callback = (err) => reject(new Error(err?.type || "Google sign-in was cancelled"))
+    function displayFile(file, fileViewer) {
+      const fileUrl = file.fileUrl
+      const fileExtension = file.extension?.toLowerCase()
 
-                googleTokenClient.requestAccessToken({
-                    prompt: googleAccessToken ? "" : "consent",
-                })
-            })
+      if (file.type === "link") {
+        const documentIframe = document.createElement("iframe")
+        documentIframe.src = fileUrl
+        fileViewer.appendChild(documentIframe)
+      }
+      else if (
+        ["png", "jpg", "jpeg", "gif", "webp"].includes(fileExtension)
+      ) {
+        const imageSource = `/api/file?url=${encodeURIComponent(fileUrl)}`
+        const documentImage = document.createElement("img")
+        documentImage.className = "doc-image"
+        documentImage.src = imageSource
+        documentImage.alt = file.title || ""
+        documentImage.addEventListener("click", () =>
+          openLightbox(imageSource, documentImage.alt),
+        )
+        fileViewer.appendChild(documentImage)
+      }
+      else if (fileExtension === "pdf") {
+        const pdfContainer = document.createElement("div")
+        pdfContainer.className = "pdf-container"
+
+        const pdfControls = document.createElement("div")
+        pdfControls.className = "pdf-controls"
+
+        const pdfUrl = `/api/file?url=${encodeURIComponent(fileUrl)}`
+
+        const openButton = document.createElement("a")
+        openButton.className = "pdf-button"
+        openButton.href = pdfUrl
+        openButton.target = "_blank"
+        openButton.rel = "noopener noreferrer"
+        openButton.textContent = "↗ Open in new tab"
+
+        const fullscreenButton = document.createElement("button")
+        fullscreenButton.className = "pdf-button"
+        fullscreenButton.type = "button"
+        fullscreenButton.textContent = "⛶ Fullscreen"
+
+        const documentEmbed = document.createElement("embed")
+        documentEmbed.src = pdfUrl
+        documentEmbed.type = "application/pdf"
+
+        fullscreenButton.addEventListener("click", async () => {
+          if (!document.fullscreenElement) {
+            await pdfContainer.requestFullscreen()
+            fullscreenButton.textContent = "⛶ Exit fullscreen"
+          }
+          else {
+            await document.exitFullscreen()
+            fullscreenButton.textContent = "⛶ Fullscreen"
+          }
+        })
+
+        document.addEventListener("fullscreenchange", () => {
+          if (!document.fullscreenElement) {
+            fullscreenButton.textContent = "⛶ Fullscreen"
+          }
+        })
+
+        pdfControls.appendChild(openButton)
+        pdfControls.appendChild(fullscreenButton)
+
+        pdfContainer.appendChild(pdfControls)
+        pdfContainer.appendChild(documentEmbed)
+        fileViewer.appendChild(pdfContainer)
+      }
+      else if (["mp4"].includes(fileExtension)) {
+        const documentVideo = document.createElement("video")
+        documentVideo.src = `/api/file?url=${encodeURIComponent(fileUrl)}`
+        documentVideo.controls = true
+        documentVideo.playsInline = true
+        documentVideo.preload = "metadata"
+        fileViewer.appendChild(documentVideo)
+      }
+      else {
+        const documentIframe = document.createElement("iframe")
+        documentIframe.src = `/api/file?url=${encodeURIComponent(fileUrl)}`
+        fileViewer.appendChild(documentIframe)
+      }
+    }
+
+    function linkify(html) {
+      const container = document.createElement("div")
+      container.innerHTML = html
+
+      const urlRegex = /https?:\/\/[^\s<>"']+/g
+
+      const walker = document.createTreeWalker(
+        container,
+        NodeFilter.SHOW_TEXT,
+        {
+          acceptNode(node) {
+            return node.parentElement?.closest("a") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+          },
+        },
+      )
+
+      const textNodes = []
+      let currentNode
+      while (currentNode = walker.nextNode()) {
+        textNodes.push(currentNode)
+      }
+
+      for (const textNode of textNodes) {
+        const text = textNode.nodeValue
+        if (!urlRegex.test(text)) {
+          continue
         }
 
-        function showGoogleDrivePicker(accessToken) {
-            return new Promise((resolve, reject) => {
-                try {
-                    const picker = new google.picker.PickerBuilder()
-                        .addView(google.picker.ViewId.DOCS)
-                        .setOAuthToken(accessToken)
-                        .setDeveloperKey(GOOGLE_API_KEY)
-                        .setCallback((data) => {
-                            if (data.action === google.picker.Action.PICKED) {
-                                resolve(data.docs || [])
-                            }
-                            else if (data.action === google.picker.Action.CANCEL) {
-                                resolve([])
-                            }
-                        })
-                        .build()
-                    picker.setVisible(true)
-                }
-                catch (err) {
-                    reject(err)
-                }
-            })
+        urlRegex.lastIndex = 0
+
+        const fragment = document.createDocumentFragment()
+        let lastIndex = 0
+        let match
+
+        while (match = urlRegex.exec(text)) {
+          const rawUrl = match[0]
+          const cleanUrl = rawUrl.replace(/[),.]+$/, "")
+          const trailingUrlText = rawUrl.slice(cleanUrl.length)
+
+          if (match.index > lastIndex) {
+            fragment.appendChild(
+              document.createTextNode(text.slice(lastIndex, match.index)),
+            )
+          }
+
+          const linkElement = document.createElement("a")
+          linkElement.href = cleanUrl
+          linkElement.target = "_blank"
+          linkElement.rel = "noopener noreferrer"
+          linkElement.textContent = cleanUrl
+          fragment.appendChild(linkElement)
+
+          if (trailingUrlText) {
+            fragment.appendChild(document.createTextNode(trailingUrlText))
+          }
+
+          lastIndex = match.index + rawUrl.length
         }
 
-
-        const GOOGLE_EXPORT_MIME_TYPES = {
-            "application/vnd.google-apps.document":
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            "application/vnd.google-apps.spreadsheet":
-                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            "application/vnd.google-apps.presentation":
-                "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-            "application/vnd.google-apps.drawing": "image/png",
+        if (lastIndex < text.length) {
+          fragment.appendChild(
+            document.createTextNode(text.slice(lastIndex)),
+          )
         }
 
-        const GOOGLE_EXPORT_EXTENSIONS = {
-            "application/vnd.google-apps.document": ".docx",
-            "application/vnd.google-apps.spreadsheet": ".xlsx",
-            "application/vnd.google-apps.presentation": ".pptx",
-            "application/vnd.google-apps.drawing": ".png",
+        textNode.replaceWith(fragment)
+      }
+
+      return container.innerHTML
+    }
+
+    let submissionLibsPromise = null
+
+    function loadScriptOnce(src) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`script[src="${src}"]`)) {
+          resolve()
+          return
+        }
+        const script = document.createElement("script")
+        script.src = src
+        script.onload = () => resolve()
+        script.onerror = () =>
+          reject(new Error(`Failed to load script: ${src}`))
+        document.head.appendChild(script)
+      })
+    }
+
+    function loadStyleOnce(href) {
+      return new Promise((resolve, reject) => {
+        if (document.querySelector(`link[href="${href}"]`)) {
+          resolve()
+          return
+        }
+        const link = document.createElement("link")
+        link.rel = "stylesheet"
+        link.href = href
+        link.onload = () => resolve()
+        link.onerror = () =>
+          reject(new Error(`Failed to load stylesheet: ${href}`))
+        document.head.appendChild(link)
+      })
+    }
+
+    function ensureSubmissionLibsLoaded() {
+      if (!submissionLibsPromise) {
+        submissionLibsPromise = Promise.all([
+          loadStyleOnce(
+            "https://cdn.jsdelivr.net/npm/quill@2/dist/quill.snow.css",
+          ),
+          loadScriptOnce(
+            "https://cdn.jsdelivr.net/npm/quill@2/dist/quill.js",
+          ),
+          loadScriptOnce(
+            "https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js",
+          ),
+        ])
+      }
+      return submissionLibsPromise
+    }
+
+    let googleDriveLibsPromise = null
+    let googleTokenClient = null
+    let googleAccessToken = null
+
+    function ensureGoogleDriveLoaded() {
+      if (!googleDriveLibsPromise) {
+        googleDriveLibsPromise = Promise.all([
+          loadScriptOnce("https://accounts.google.com/gsi/client"),
+          loadScriptOnce("https://apis.google.com/js/api.js"),
+        ]).then(
+          () =>
+            new Promise((resolve, reject) => {
+              gapi.load("picker", {
+                callback: resolve,
+                onerror: () =>
+                  reject(new Error("Failed to load Google Picker")),
+              })
+            }),
+        )
+      }
+      return googleDriveLibsPromise
+    }
+
+    function requestGoogleAccessToken() {
+      return new Promise((resolve, reject) => {
+        if (!googleTokenClient) {
+          googleTokenClient = google.accounts.oauth2.initTokenClient({
+            client_id: GOOGLE_CLIENT_ID,
+            scope: "https://www.googleapis.com/auth/drive.file",
+            callback: () => { },
+          })
         }
 
-        async function downloadDriveFile(doc, accessToken) {
-            const exportMimeType = GOOGLE_EXPORT_MIME_TYPES[doc.mimeType]
+        googleTokenClient.callback = (tokenResponse) => {
+          if (tokenResponse.error) {
+            reject(new Error(tokenResponse.error))
+            return
+          }
+          googleAccessToken = tokenResponse.access_token
+          resolve(googleAccessToken)
+        }
+        googleTokenClient.error_callback = (err) =>
+          reject(new Error(err?.type || "Google sign-in was cancelled"))
 
-            const downloadUrl = exportMimeType ? `https://www.googleapis.com/drive/v3/files/${doc.id}/export?mimeType=${encodeURIComponent(exportMimeType)}` : `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`
+        googleTokenClient.requestAccessToken({
+          prompt: googleAccessToken ? "" : "consent",
+        })
+      })
+    }
 
-            const response = await fetchWithRetry(downloadUrl, {
-                headers: { Authorization: `Bearer ${accessToken}` },
+    function showGoogleDrivePicker(accessToken) {
+      return new Promise((resolve, reject) => {
+        try {
+          const picker = new google.picker.PickerBuilder()
+            .addView(google.picker.ViewId.DOCS)
+            .setOAuthToken(accessToken)
+            .setDeveloperKey(GOOGLE_API_KEY)
+            .setCallback((data) => {
+              if (data.action === google.picker.Action.PICKED) {
+                resolve(data.docs || [])
+              }
+              else if (data.action === google.picker.Action.CANCEL) {
+                resolve([])
+              }
             })
+            .build()
+          picker.setVisible(true)
+        }
+        catch (err) {
+          reject(err)
+        }
+      })
+    }
 
-            if (!response.ok) {
-                throw new Error(`Failed to download "${doc.name}" from Drive (${response.status})`)
+    const GOOGLE_EXPORT_MIME_TYPES = {
+      "application/vnd.google-apps.document":
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      "application/vnd.google-apps.spreadsheet":
+        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "application/vnd.google-apps.presentation":
+        "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+      "application/vnd.google-apps.drawing": "image/png",
+    }
+
+    const GOOGLE_EXPORT_EXTENSIONS = {
+      "application/vnd.google-apps.document": ".docx",
+      "application/vnd.google-apps.spreadsheet": ".xlsx",
+      "application/vnd.google-apps.presentation": ".pptx",
+      "application/vnd.google-apps.drawing": ".png",
+    }
+
+    async function downloadDriveFile(doc, accessToken) {
+      const exportMimeType = GOOGLE_EXPORT_MIME_TYPES[doc.mimeType]
+
+      const downloadUrl = exportMimeType ? `https://www.googleapis.com/drive/v3/files/${doc.id}/export?mimeType=${encodeURIComponent(exportMimeType)}` : `https://www.googleapis.com/drive/v3/files/${doc.id}?alt=media`
+
+      const response = await fetchWithRetry(downloadUrl, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+
+      if (!response.ok) {
+        throw new Error(
+          `Failed to download "${doc.name}" from Drive (${response.status})`,
+        )
+      }
+
+      const blob = await response.blob()
+      let fileName = doc.name
+      const extension = GOOGLE_EXPORT_EXTENSIONS[doc.mimeType]
+      if (extension && !fileName.toLowerCase().endsWith(extension)) {
+        fileName += extension
+      }
+
+      return new File([blob], fileName, { type: blob.type || doc.mimeType })
+    }
+
+    async function fetchLatestDraftHtml() {
+      try {
+        const response = await fetchWithRetry(
+          `/api/section/${sectionId}/folder/${folderId}/material/${materialId}`,
+        )
+        const materialResponse = await response.json()
+        const submissions = materialResponse.material?.submissions || []
+        const draft = submissions.find(
+          (submission) => submission.type === "draft",
+        )
+        return draft ? { html: draft.draft_html || null, revisionId: draft.id } : null
+      }
+      catch (err) {
+        console.error("Failed to refresh draft:", err)
+        return null
+      }
+    }
+
+    function openSubmissionModal(assignmentId) {
+      const modalTemplate = document.getElementById(
+        "submission-modal-template",
+      )
+      const modalFragment = modalTemplate.content.cloneNode(true)
+
+      const overlay = modalFragment.querySelector(
+        ".submission-modal-overlay",
+      )
+      const closeButton = modalFragment.querySelector(
+        ".submission-modal-close",
+      )
+      const submitButton = modalFragment.querySelector(
+        ".submission-modal-submit",
+      )
+      const fileInput = modalFragment.querySelector(".submission-file-input")
+      const driveButton = modalFragment.querySelector(
+        ".submission-drive-btn",
+      )
+      const fileListElement = modalFragment.querySelector(
+        ".submission-file-list",
+      )
+      const errorElement = modalFragment.querySelector(
+        ".submission-modal-error",
+      )
+      const commentInput = modalFragment.querySelector(
+        ".submission-comment-input",
+      )
+      const editorElement = modalFragment.querySelector(
+        ".submission-editor-quill",
+      )
+      const editorWrapper = modalFragment.querySelector(
+        ".submission-editor-wrapper",
+      )
+      const tabButtons = modalFragment.querySelectorAll(
+        ".submission-tab-btn",
+      )
+      const tabPanels = modalFragment.querySelectorAll(
+        ".submission-tab-panel",
+      )
+
+      document.body.appendChild(overlay)
+
+      let selectedFiles = []
+      let quill = null
+      let activeTab = "text"
+      let draftRevisionId = null
+
+      function hasText() {
+        return quill ? quill.getText().trim().length > 0 : false
+      }
+
+      function hasFiles() {
+        return selectedFiles.length > 0
+      }
+
+      function setActiveTab(tab) {
+        activeTab = tab
+        tabButtons.forEach((btn) => {
+          btn.classList.toggle("active", btn.dataset.tab === tab)
+        })
+        tabPanels.forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.tabPanel === tab)
+        })
+        errorElement.textContent = ""
+      }
+
+      tabButtons.forEach((btn) => {
+        btn.addEventListener("click", () => setActiveTab(btn.dataset.tab))
+      })
+
+      async function saveDraftIfNeeded() {
+        if (!hasText()) {
+          if (!draftRevisionId) {
+            return
+          }
+
+          const formData = new FormData()
+          formData.append("assignment_id", assignmentId)
+          formData.append("revision_id", draftRevisionId)
+          await fetchWithRetry("/delete_draft", {
+            method: "POST",
+            body: formData,
+          })
+          draftRevisionId = null
+          return
+        }
+        try {
+          const formData = new FormData()
+          formData.append("assignment_id", assignmentId)
+          formData.append("html", quill.root.innerHTML)
+          await fetchWithRetry("/save_draft", {
+            method: "POST",
+            body: formData,
+          })
+        }
+        catch (err) {
+          console.error("Failed to save draft:", err)
+        }
+      }
+
+      function saveDraftOnUnload() {
+        if (!hasText()) {
+          return
+        }
+        const formData = new FormData()
+        formData.append("assignment_id", assignmentId)
+        formData.append("html", quill.root.innerHTML)
+        navigator.sendBeacon("/save_draft", formData)
+      }
+
+      window.addEventListener("beforeunload", saveDraftOnUnload)
+
+      async function closeModal() {
+        window.removeEventListener("beforeunload", saveDraftOnUnload)
+        await saveDraftIfNeeded()
+        quill = null
+        overlay.remove()
+      }
+
+      closeButton.addEventListener("click", () => {
+        closeButton.disabled = true
+        closeModal()
+      })
+
+      function renderFileList() {
+        fileListElement.innerHTML = ""
+        selectedFiles.forEach((file, index) => {
+          const item = document.createElement("div")
+          item.className = "submission-file-item"
+
+          const name = document.createElement("span")
+          name.className = "submission-file-name"
+          name.textContent = file.name
+
+          const removeButton = document.createElement("button")
+          removeButton.type = "button"
+          removeButton.className = "submission-file-remove"
+          removeButton.textContent = "\u2715"
+          removeButton.title = "Remove"
+          removeButton.addEventListener("click", () => {
+            selectedFiles.splice(index, 1)
+            renderFileList()
+          })
+
+          item.appendChild(name)
+          item.appendChild(removeButton)
+          fileListElement.appendChild(item)
+        })
+      }
+
+      fileInput.addEventListener("change", () => {
+        selectedFiles = selectedFiles.concat(Array.from(fileInput.files))
+        fileInput.value = ""
+        renderFileList()
+      })
+
+      const dropzone = overlay.querySelector(".submission-dropzone");
+
+      ["dragenter", "dragover"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          dropzone.classList.add("drag-over")
+        })
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        dropzone.addEventListener(eventName, (event) => {
+          event.preventDefault()
+          event.stopPropagation()
+          if (
+            eventName === "dragleave" && dropzone.contains(event.relatedTarget)
+          ) {
+            return
+          }
+          dropzone.classList.remove("drag-over")
+        })
+      })
+
+      dropzone.addEventListener("drop", (event) => {
+        const droppedFiles = Array.from(event.dataTransfer?.files || [])
+        if (droppedFiles.length) {
+          selectedFiles = selectedFiles.concat(droppedFiles)
+          renderFileList()
+        }
+      })
+
+      driveButton.addEventListener("click", async () => {
+        errorElement.textContent = ""
+        driveButton.disabled = true
+        const originalLabel = driveButton.textContent
+        driveButton.textContent = "Connecting to Google Drive..."
+
+        try {
+          await ensureGoogleDriveLoaded()
+          const accessToken = await requestGoogleAccessToken()
+          const docs = await showGoogleDrivePicker(accessToken)
+
+          if (docs.length) {
+            driveButton.textContent = "Downloading from Drive..."
+            const downloadedFiles = await Promise.all(
+              docs.map((doc) => downloadDriveFile(doc, accessToken)),
+            )
+            selectedFiles = selectedFiles.concat(downloadedFiles)
+            renderFileList()
+          }
+        }
+        catch (err) {
+          console.error("Google Drive picker failed:", err)
+          errorElement.textContent = "Couldn't get those files from Google Drive."
+        }
+        finally {
+          driveButton.disabled = false
+          driveButton.textContent = originalLabel
+        }
+      })
+
+      const draftPromise = fetchLatestDraftHtml()
+
+      ensureSubmissionLibsLoaded()
+        .then(() => {
+          quill = new Quill(editorElement, {
+            theme: "snow",
+            placeholder: "Loading draft...",
+            bounds: editorWrapper,
+            modules: {
+              toolbar: [
+                ["bold", "italic", "underline", "strike"],
+                [{ header: 1 }, { header: 2 }],
+                [{ list: "ordered" }, { list: "bullet" }],
+                ["blockquote", "code-block", "link"],
+                ["clean"],
+              ],
+            },
+          })
+
+          return draftPromise
+        })
+        .then((draft) => {
+          quill.root.dataset.placeholder = "Write your submission here..."
+          if (draft) {
+            draftRevisionId = draft.revisionId
+            if (draft.html) {
+              quill.clipboard.dangerouslyPasteHTML(draft.html)
             }
+          }
+        })
+        .catch(() => {
+          if (quill) {
+            quill.root.dataset.placeholder = "Write your submission here..."
+          }
+          errorElement.textContent = "Couldn't load the editor. You can still attach files."
+        })
 
-            const blob = await response.blob()
-            let fileName = doc.name
-            const extension = GOOGLE_EXPORT_EXTENSIONS[doc.mimeType]
-            if (extension && !fileName.toLowerCase().endsWith(extension)) {
-                fileName += extension
-            }
+      submitButton.addEventListener("click", async () => {
+        errorElement.textContent = ""
 
-            return new File([blob], fileName, { type: blob.type || doc.mimeType })
+        if (activeTab === "text") {
+          if (!hasText()) {
+            errorElement.textContent = "Write something before submitting."
+            return
+          }
+        }
+        else if (!hasFiles()) {
+          errorElement.textContent = "Attach at least one file before submitting."
+          return
         }
 
-        async function fetchLatestDraftHtml() {
-            try {
-                const response = await fetchWithRetry(`/api/section/${sectionId}/folder/${folderId}/material/${materialId}`)
-                const materialResponse = await response.json()
-                const submissions = materialResponse.material?.submissions || []
-                const draft = submissions.find((submission) => submission.type === "draft")
-                return draft ? { html: draft.draft_html || null, revisionId: draft.id } : null
+        submitButton.disabled = true
+        submitButton.textContent = "Submitting..."
+
+        try {
+          const formData = new FormData()
+          formData.append("assignment_id", assignmentId)
+          formData.append("draft_revision_id", draftRevisionId)
+
+          if (activeTab === "text") {
+            const rawHtml = quill.root.innerHTML
+            const cleanHtml = typeof DOMPurify !== "undefined" ? DOMPurify.sanitize(rawHtml) : rawHtml
+            formData.append("html", cleanHtml)
+          }
+          else {
+            if (commentInput.value.trim()) {
+              formData.append("comment", commentInput.value.trim())
             }
-            catch (err) {
-                console.error("Failed to refresh draft:", err)
-                return null
-            }
+            selectedFiles.forEach((file) => {
+              formData.append("files", file, file.name)
+            })
+          }
+
+          const response = await fetchWithRetry("/submit_assignment", {
+            method: "POST",
+            body: formData,
+          })
+
+          const result = await response.json()
+
+          if (!response.ok || result.status !== "ok") {
+            throw new Error(result.message || "Submission failed.")
+          }
+
+          window.removeEventListener("beforeunload", saveDraftOnUnload)
+          quill = null
+          overlay.remove()
+          await loadMaterial()
         }
-
-        function openSubmissionModal(assignmentId) {
-            const modalTemplate = document.getElementById("submission-modal-template")
-            const modalFragment = modalTemplate.content.cloneNode(true)
-
-            const overlay = modalFragment.querySelector(".submission-modal-overlay")
-            const closeButton = modalFragment.querySelector(".submission-modal-close")
-            const submitButton = modalFragment.querySelector(".submission-modal-submit")
-            const fileInput = modalFragment.querySelector(".submission-file-input")
-            const driveButton = modalFragment.querySelector(".submission-drive-btn")
-            const fileListElement = modalFragment.querySelector(".submission-file-list")
-            const errorElement = modalFragment.querySelector(".submission-modal-error")
-            const commentInput = modalFragment.querySelector(".submission-comment-input")
-            const editorElement = modalFragment.querySelector(".submission-editor-quill")
-            const editorWrapper = modalFragment.querySelector(".submission-editor-wrapper")
-            const tabButtons = modalFragment.querySelectorAll(".submission-tab-btn")
-            const tabPanels = modalFragment.querySelectorAll(".submission-tab-panel")
-
-            document.body.appendChild(overlay)
-
-            let selectedFiles = []
-            let quill = null
-            let activeTab = "text"
-            let draftRevisionId = null
-
-            function hasText() {
-                return quill ? quill.getText().trim().length > 0 : false
-            }
-
-            function hasFiles() {
-                return selectedFiles.length > 0
-            }
-
-            function setActiveTab(tab) {
-                activeTab = tab
-                tabButtons.forEach((btn) => {
-                    btn.classList.toggle("active", btn.dataset.tab === tab)
-                })
-                tabPanels.forEach((panel) => {
-                    panel.classList.toggle("active", panel.dataset.tabPanel === tab)
-                })
-                errorElement.textContent = ""
-            }
-
-            tabButtons.forEach((btn) => {
-                btn.addEventListener("click", () => setActiveTab(btn.dataset.tab))
-            })
-
-            async function saveDraftIfNeeded() {
-                if (!hasText()) {
-                    if (!draftRevisionId) {
-                        return
-                    }
-
-                    const formData = new FormData()
-                    formData.append("assignment_id", assignmentId)
-                    formData.append("revision_id", draftRevisionId)
-                    await fetchWithRetry("/delete_draft", { method: "POST", body: formData })
-                    draftRevisionId = null
-                    return
-                }
-                try {
-                    const formData = new FormData()
-                    formData.append("assignment_id", assignmentId)
-                    formData.append("html", quill.root.innerHTML)
-                    await fetchWithRetry("/save_draft", { method: "POST", body: formData })
-                }
-                catch (err) {
-                    console.error("Failed to save draft:", err)
-                }
-            }
-
-            function saveDraftOnUnload() {
-                if (!hasText()) {
-                    return
-                }
-                const formData = new FormData()
-                formData.append("assignment_id", assignmentId)
-                formData.append("html", quill.root.innerHTML)
-                navigator.sendBeacon("/save_draft", formData)
-            }
-
-            window.addEventListener("beforeunload", saveDraftOnUnload)
-
-            async function closeModal() {
-                window.removeEventListener("beforeunload", saveDraftOnUnload)
-                await saveDraftIfNeeded()
-                quill = null
-                overlay.remove()
-            }
-
-            closeButton.addEventListener("click", () => {
-                closeButton.disabled = true
-                closeModal()
-            })
-
-            function renderFileList() {
-                fileListElement.innerHTML = ""
-                selectedFiles.forEach((file, index) => {
-                    const item = document.createElement("div")
-                    item.className = "submission-file-item"
-
-                    const name = document.createElement("span")
-                    name.className = "submission-file-name"
-                    name.textContent = file.name
-
-                    const removeButton = document.createElement("button")
-                    removeButton.type = "button"
-                    removeButton.className = "submission-file-remove"
-                    removeButton.textContent = "\u2715"
-                    removeButton.title = "Remove"
-                    removeButton.addEventListener("click", () => {
-                        selectedFiles.splice(index, 1)
-                        renderFileList()
-                    })
-
-                    item.appendChild(name)
-                    item.appendChild(removeButton)
-                    fileListElement.appendChild(item)
-                })
-            }
-
-            fileInput.addEventListener("change", () => {
-                selectedFiles = selectedFiles.concat(Array.from(fileInput.files))
-                fileInput.value = ""
-                renderFileList()
-            })
-
-            const dropzone = overlay.querySelector(".submission-dropzone")
-
-
-                ;["dragenter", "dragover"].forEach((eventName) => {
-                    dropzone.addEventListener(eventName, (event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        dropzone.classList.add("drag-over")
-                    })
-                })
-
-                ;["dragleave", "drop"].forEach((eventName) => {
-                    dropzone.addEventListener(eventName, (event) => {
-                        event.preventDefault()
-                        event.stopPropagation()
-                        if (eventName === "dragleave" && dropzone.contains(event.relatedTarget)) {
-                            return
-                        }
-                        dropzone.classList.remove("drag-over")
-                    })
-                })
-
-            dropzone.addEventListener("drop", (event) => {
-                const droppedFiles = Array.from(event.dataTransfer?.files || [])
-                if (droppedFiles.length) {
-                    selectedFiles = selectedFiles.concat(droppedFiles)
-                    renderFileList()
-                }
-            })
-
-            driveButton.addEventListener("click", async () => {
-                errorElement.textContent = ""
-                driveButton.disabled = true
-                const originalLabel = driveButton.textContent
-                driveButton.textContent = "Connecting to Google Drive..."
-
-                try {
-                    await ensureGoogleDriveLoaded()
-                    const accessToken = await requestGoogleAccessToken()
-                    const docs = await showGoogleDrivePicker(accessToken)
-
-                    if (docs.length) {
-                        driveButton.textContent = "Downloading from Drive..."
-                        const downloadedFiles = await Promise.all(
-                            docs.map((doc) => downloadDriveFile(doc, accessToken))
-                        )
-                        selectedFiles = selectedFiles.concat(downloadedFiles)
-                        renderFileList()
-                    }
-                }
-                catch (err) {
-                    console.error("Google Drive picker failed:", err)
-                    errorElement.textContent = "Couldn't get those files from Google Drive."
-                }
-                finally {
-                    driveButton.disabled = false
-                    driveButton.textContent = originalLabel
-                }
-            })
-
-            const draftPromise = fetchLatestDraftHtml()
-
-            ensureSubmissionLibsLoaded()
-                .then(() => {
-                    quill = new Quill(editorElement, {
-                        theme: "snow",
-                        placeholder: "Loading draft...",
-                        bounds: editorWrapper,
-                        modules: {
-                            toolbar: [
-                                ["bold", "italic", "underline", "strike"],
-                                [{ header: 1 }, { header: 2 }],
-                                [{ list: "ordered" }, { list: "bullet" }],
-                                ["blockquote", "code-block", "link"],
-                                ["clean"],
-                            ],
-                        },
-                    })
-
-                    return draftPromise
-                })
-                .then((draft) => {
-                    quill.root.dataset.placeholder = "Write your submission here..."
-                    if (draft) {
-                        draftRevisionId = draft.revisionId
-                        if (draft.html) {
-                            quill.clipboard.dangerouslyPasteHTML(draft.html)
-                        }
-                    }
-                })
-                .catch(() => {
-                    if (quill) {
-                        quill.root.dataset.placeholder = "Write your submission here..."
-                    }
-                    errorElement.textContent = "Couldn't load the editor. You can still attach files."
-                })
-
-            submitButton.addEventListener("click", async () => {
-                errorElement.textContent = ""
-
-                if (activeTab === "text") {
-                    if (!hasText()) {
-                        errorElement.textContent = "Write something before submitting."
-                        return
-                    }
-                }
-                else if (!hasFiles()) {
-                    errorElement.textContent = "Attach at least one file before submitting."
-                    return
-                }
-
-                submitButton.disabled = true
-                submitButton.textContent = "Submitting..."
-
-                try {
-                    const formData = new FormData()
-                    formData.append("assignment_id", assignmentId)
-                    formData.append("draft_revision_id", draftRevisionId)
-
-                    if (activeTab === "text") {
-                        const rawHtml = quill.root.innerHTML
-                        const cleanHtml = typeof DOMPurify !== "undefined" ? DOMPurify.sanitize(rawHtml) : rawHtml
-                        formData.append("html", cleanHtml)
-                    }
-                    else {
-                        if (commentInput.value.trim()) {
-                            formData.append("comment", commentInput.value.trim())
-                        }
-                        selectedFiles.forEach((file) => {
-                            formData.append("files", file, file.name)
-                        })
-                    }
-
-                    const response = await fetchWithRetry("/submit_assignment", {
-                        method: "POST",
-                        body: formData,
-                    })
-
-                    const result = await response.json()
-
-                    if (!response.ok || result.status !== "ok") {
-                        throw new Error(result.message || "Submission failed.")
-                    }
-
-                    window.removeEventListener("beforeunload", saveDraftOnUnload)
-                    quill = null
-                    overlay.remove()
-                    await loadMaterial()
-                }
-                catch (err) {
-                    errorElement.textContent = err.message || "Something went wrong while submitting."
-                    submitButton.disabled = false
-                    submitButton.textContent = "Submit"
-                }
-            })
+        catch (err) {
+          errorElement.textContent = err.message || "Something went wrong while submitting."
+          submitButton.disabled = false
+          submitButton.textContent = "Submit"
         }
+      })
+    }
 
-        function stripInlineColors(html) {
-            const container = document.createElement("div")
-            container.innerHTML = html
-            container.querySelectorAll("[style]").forEach((element) => {
-                element.style.removeProperty("color")
-                element.style.removeProperty("background-color")
-            })
-            return container.innerHTML
-        }
-    </script>
+    function stripInlineColors(html) {
+      const container = document.createElement("div")
+      container.innerHTML = html
+      container.querySelectorAll("[style]").forEach((element) => {
+        element.style.removeProperty("color")
+        element.style.removeProperty("background-color")
+      })
+      return container.innerHTML
+    }
+  </script>
 
-    <template id="assignment-template">
-        <div class="panels">
-            <div class="left-panel">
-                <div class="category"></div>
+  <template id="assignment-template">
+    <div class="panels">
+      <div class="left-panel">
+        <div class="category"></div>
 
-                <div class="due-date">
-                    <div class="due-date-text"></div>
-                    <div class="due-date-countdown"></div>
-                </div>
-            </div>
+        <div class="due-date">
+          <div class="due-date-text"></div>
+          <div class="due-date-countdown"></div>
+        </div>
+      </div>
 
-            <div class="right-panel">
-                <div class="grade">
-                    <div class="grade-score"></div>
-                    <div class="grade-comment"></div>
-                </div>
-            </div>
+      <div class="right-panel">
+        <div class="grade">
+          <div class="grade-score"></div>
+          <div class="grade-comment"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="content-row">
+      <div class="left-content">
+        <div class="description">
+          <div class="description-title">Description</div>
+          <div class="description-content"></div>
         </div>
 
-        <div class="content-row">
-            <div class="left-content">
-                <div class="description">
-                    <div class="description-title">Description</div>
-                    <div class="description-content"></div>
-                </div>
+        <div class="attachments-container">
+          <div class="attachments-title">Attachments</div>
+          <div class="attachments"></div>
+        </div>
+      </div>
 
-                <div class="attachments-container">
-                    <div class="attachments-title">Attachments</div>
-                    <div class="attachments"></div>
-                </div>
-            </div>
+      <div class="submissions-row">
+        <button class="add-submission-btn" type="button">
+          Add Submission
+        </button>
 
-            <div class="submissions-row">
-                <button class="add-submission-btn" type="button">Add Submission</button>
+        <div class="submissions-container">
+          <div class="submissions"></div>
+        </div>
+      </div>
+    </div>
 
-                <div class="submissions-container">
-                    <div class="submissions"></div>
-                </div>
-            </div>
+    <div class="comment"></div>
+  </template>
+
+  <template id="submission-template">
+    <div class="submission">
+      <div class="submission-header">
+        <a class="submission-link" target="_blank" rel="noopener noreferrer"></a>
+        <span class="late-text"></span>
+      </div>
+
+      <div class="submission-content"></div>
+    </div>
+  </template>
+
+  <template id="file-template">
+    <div class="file-wrapper">
+      <div class="file-name"></div>
+      <a class="download-btn">Download</a>
+    </div>
+  </template>
+
+  <template id="html-template">
+    <div class="submission-viewer"></div>
+  </template>
+
+  <template id="submission-modal-template">
+    <div class="submission-modal-overlay">
+      <div class="submission-modal">
+        <div class="submission-modal-header">
+          <h3>Add Submission</h3>
+          <button type="button" class="submission-modal-close" title="Close">
+            &times;
+          </button>
         </div>
 
-        <div class="comment"></div>
-    </template>
+        <div class="submission-modal-body">
+          <div class="submission-modal-tabs">
+            <button type="button" class="submission-tab-btn active" data-tab="text">
+              Write
+            </button>
+            <button type="button" class="submission-tab-btn" data-tab="files">
+              Attach files
+            </button>
+          </div>
 
-    <template id="submission-template">
-        <div class="submission">
-            <div class="submission-header">
-                <a class="submission-link" target="_blank" rel="noopener noreferrer"></a>
-                <span class="late-text"></span>
+          <div class="submission-modal-panels">
+            <div class="submission-tab-panel submission-tab-panel-text active" data-tab-panel="text">
+              <div class="submission-modal-section submission-editor-section">
+                <div class="submission-editor-wrapper">
+                  <div class="submission-editor-quill"></div>
+                </div>
+              </div>
             </div>
 
-            <div class="submission-content"></div>
-        </div>
-    </template>
-
-    <template id="file-template">
-        <div class="file-wrapper">
-            <div class="file-name"></div>
-            <a class="download-btn">Download</a>
-        </div>
-    </template>
-
-    <template id="html-template">
-        <div class="submission-viewer"></div>
-    </template>
-
-    <template id="submission-modal-template">
-        <div class="submission-modal-overlay">
-            <div class="submission-modal">
-                <div class="submission-modal-header">
-                    <h3>Add Submission</h3>
-                    <button type="button" class="submission-modal-close" title="Close">&times;</button>
+            <div class="submission-tab-panel submission-tab-panel-files" data-tab-panel="files">
+              <div class="submission-modal-section">
+                <div class="submission-modal-label">Attach files</div>
+                <div class="submission-dropzone">
+                  <div class="submission-attach-row">
+                    <input type="file" class="submission-file-input" multiple />
+                    <button type="button" class="submission-drive-btn">
+                      Select from Google Drive
+                    </button>
+                  </div>
+                  <div class="submission-dropzone-hint">
+                    or drag and drop files here
+                  </div>
+                  <div class="submission-file-list"></div>
                 </div>
+              </div>
 
-                <div class="submission-modal-body">
-                    <div class="submission-modal-tabs">
-                        <button type="button" class="submission-tab-btn active" data-tab="text">Write</button>
-                        <button type="button" class="submission-tab-btn" data-tab="files">Attach files</button>
-                    </div>
-
-                    <div class="submission-modal-panels">
-                        <div class="submission-tab-panel submission-tab-panel-text active" data-tab-panel="text">
-                            <div class="submission-modal-section submission-editor-section">
-                                <div class="submission-editor-wrapper">
-                                    <div class="submission-editor-quill"></div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="submission-tab-panel submission-tab-panel-files" data-tab-panel="files">
-                            <div class="submission-modal-section">
-                                <div class="submission-modal-label">Attach files</div>
-                                <div class="submission-dropzone">
-                                    <div class="submission-attach-row">
-                                        <input type="file" class="submission-file-input" multiple />
-                                        <button type="button" class="submission-drive-btn">Select from Google
-                                            Drive</button>
-                                    </div>
-                                    <div class="submission-dropzone-hint">or drag and drop files here</div>
-                                    <div class="submission-file-list"></div>
-                                </div>
-                            </div>
-
-                            <div class="submission-modal-section">
-                                <div class="submission-modal-label">Comment (optional)</div>
-                                <textarea class="submission-comment-input" rows="2"
-                                    placeholder="Add a comment for your teacher..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="submission-modal-error"></div>
-                </div>
-
-                <div class="submission-modal-footer">
-                    <button type="button" class="submission-modal-submit">Submit</button>
-                </div>
+              <div class="submission-modal-section">
+                <div class="submission-modal-label">Comment (optional)</div>
+                <textarea class="submission-comment-input" rows="2"
+                  placeholder="Add a comment for your teacher..."></textarea>
+              </div>
             </div>
-        </div>
-    </template>
+          </div>
 
+          <div class="submission-modal-error"></div>
+        </div>
+
+        <div class="submission-modal-footer">
+          <button type="button" class="submission-modal-submit">
+            Submit
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
 </body>
 
 </html>

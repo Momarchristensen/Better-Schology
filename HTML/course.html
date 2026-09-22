@@ -1,14 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="icon" href="/logo.svg">
+    <link rel="icon" href="/logo.svg" />
     <title>Course</title>
-    <link rel="stylesheet" href="/app.css">
-    <link rel="stylesheet" href="/assignments-sidebar.css">
-    <link rel="stylesheet" href="/assignments-search.css">
+    <link rel="stylesheet" href="/app.css" />
+    <link rel="stylesheet" href="/assignments-sidebar.css" />
+    <link rel="stylesheet" href="/assignments-search.css" />
     <script src="/app.js"></script>
     <style>
         :root {
@@ -183,7 +183,10 @@
             color: var(--text);
             font-size: 0.9rem;
             font-weight: 600;
-            transition: background 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+            transition:
+                background 0.18s ease,
+                transform 0.18s ease,
+                border-color 0.18s ease;
             width: fit-content;
             flex: 0 0 auto;
             box-shadow: 0 8px 18px rgb(2, 6, 23, 25%);
@@ -249,7 +252,9 @@
             padding: 8px 12px;
             border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: background 0.18s ease, border-color 0.18s ease;
+            transition:
+                background 0.18s ease,
+                border-color 0.18s ease;
         }
 
         .sort-select-btn:hover {
@@ -296,7 +301,9 @@
             font-weight: 600;
             color: var(--text);
             cursor: pointer;
-            transition: background 0.15s ease, color 0.15s ease;
+            transition:
+                background 0.15s ease,
+                color 0.15s ease;
         }
 
         .sort-select-option:hover {
@@ -331,7 +338,9 @@
             padding: 7px 14px;
             border-radius: 8px;
             cursor: pointer;
-            transition: background 0.18s ease, color 0.18s ease;
+            transition:
+                background 0.18s ease,
+                color 0.18s ease;
             min-width: 0;
         }
 
@@ -395,7 +404,10 @@
             line-height: 1;
             cursor: pointer;
             font-family: var(--font-family);
-            transition: background 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+            transition:
+                background 0.18s ease,
+                transform 0.18s ease,
+                border-color 0.18s ease;
         }
 
         .toolbar-btn:disabled {
@@ -442,6 +454,20 @@
             overflow-y: auto;
         }
 
+        .explorer-empty {
+            padding: 16px;
+            color: var(--muted);
+            font-style: italic;
+        }
+
+        .loading {
+            padding: 6px 10px;
+            color: var(--loading-soft);
+            font-style: italic;
+            animation: var(--motion-loading-animation);
+            user-select: none;
+        }
+
         .explorer-view>.loading,
         .explorer-view>.explorer-empty {
             grid-column: 1 / -1;
@@ -464,12 +490,6 @@
             background: rgb(255, 255, 255, 5%);
         }
 
-        .explorer-empty {
-            padding: 16px;
-            color: var(--muted);
-            font-style: italic;
-        }
-
         .material-item {
             width: 100%;
             box-sizing: border-box;
@@ -479,7 +499,7 @@
             display: flex;
             align-items: center;
             width: 100%;
-            padding: 8px 10px 8px 0;
+            padding: 8px 10px 8px 8px;
             border-radius: var(--radius-sm);
             cursor: pointer;
             transition: background 0.18s ease;
@@ -505,8 +525,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             font-size: 32px;
             user-select: none;
             color: var(--text-strong);
@@ -516,7 +536,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
+            width: 20px;
             text-align: center;
             font-size: 21px;
             user-select: none;
@@ -530,7 +550,7 @@
 
         .materials-list {
             list-style: none;
-            padding-left: 10px;
+            padding-left: 4px;
             margin: 0;
             width: 100%;
         }
@@ -559,14 +579,6 @@
             bottom: 0;
             width: 1px;
             background: var(--tree-line);
-        }
-
-        .loading {
-            padding: 6px 10px;
-            color: var(--loading-soft);
-            font-style: italic;
-            animation: var(--motion-loading-animation);
-            user-select: none;
         }
 
         .loading.error {
@@ -626,7 +638,7 @@
         <main class="page">
             <div class="course-info">
                 <h2 class="course-name" id="course-name">Loading course...</h2>
-                <p class="course-subject" id="course-subject" style="display:none;"></p>
+                <p class="course-subject" id="course-subject" style="display: none"></p>
             </div>
 
             <div class="page-header">
@@ -639,22 +651,34 @@
                             <span class="sort-caret" aria-hidden="true"></span>
                         </button>
                         <ul class="sort-select-menu" id="sort-select-menu" role="listbox" aria-label="Sort by"
-                            style="display:none;">
-                            <li role="option" class="sort-select-option" data-value="default">Default</li>
-                            <li role="option" class="sort-select-option" data-value="name-asc">Name (A–Z)</li>
-                            <li role="option" class="sort-select-option" data-value="name-desc">Name (Z–A)</li>
-                            <li role="option" class="sort-select-option" data-value="type">Type</li>
+                            style="display: none">
+                            <li role="option" class="sort-select-option" data-value="default">
+                                Default
+                            </li>
+                            <li role="option" class="sort-select-option" data-value="name-asc">
+                                Name (A–Z)
+                            </li>
+                            <li role="option" class="sort-select-option" data-value="name-desc">
+                                Name (Z–A)
+                            </li>
+                            <li role="option" class="sort-select-option" data-value="type">
+                                Type
+                            </li>
                         </ul>
                     </div>
                     <div class="view-toggle" role="group" aria-label="View mode">
-                        <button type="button" id="tree-view-btn" class="view-btn active">🌳 Tree</button>
-                        <button type="button" id="explorer-view-btn" class="view-btn">🗂️ Explorer</button>
+                        <button type="button" id="tree-view-btn" class="view-btn active">
+                            🌳 Tree
+                        </button>
+                        <button type="button" id="explorer-view-btn" class="view-btn">
+                            🗂️ Explorer
+                        </button>
                     </div>
                 </div>
             </div>
 
             <ul id="root-folder" class="materials-list tree-list"></ul>
-            <div id="explorer-view" class="explorer-view" style="display:none;"></div>
+            <div id="explorer-view" class="explorer-view" style="display: none"></div>
         </main>
     </div>
 
@@ -666,7 +690,10 @@
 
         const courseId = pathSegments[1]
 
-        window.initAssignmentsSearch({ mountId: "assignments-search", sectionId: courseId })
+        window.initAssignmentsSearch({
+            mountId: "assignments-search",
+            sectionId: courseId,
+        })
 
         const pageQuery = new URLSearchParams(window.location.search)
         const requestedFolderId = pageQuery.get("folder")
@@ -677,10 +704,238 @@
             assignment: "📝",
             discussion: "💬",
             page: "📰",
-            document: "📃"
+            document: "📃",
         }
 
-        const VIEW_MODE_KEY = "courseMaterialsViewMode"
+        const settingsKeys = window.SETTINGS_KEYS
+        const VIEW_MODE_KEY = settingsKeys.viewMode
+        const EXPANDED_FOLDERS_KEY = settingsKeys.expandedFolders
+        const REMEMBER_EXPANDED_FOLDERS_KEY = settingsKeys.rememberExpandedFolders
+
+        function getRememberExpandedFoldersEnabled() {
+            try {
+                return localStorage.getItem(REMEMBER_EXPANDED_FOLDERS_KEY) === "true"
+            }
+            catch (error) {
+                console.error(error)
+                return false
+            }
+        }
+
+        const rememberExpandedFoldersEnabled = getRememberExpandedFoldersEnabled()
+
+        function getSavedExpandedFolders() {
+            try {
+                const raw = localStorage.getItem(EXPANDED_FOLDERS_KEY)
+                const parsed = raw ? JSON.parse(raw) : []
+                return Array.isArray(parsed) ? parsed : []
+            }
+            catch (error) {
+                console.error(error)
+                return []
+            }
+        }
+
+        const expandedFolderIds = new Set(
+            rememberExpandedFoldersEnabled ? getSavedExpandedFolders() : [],
+        )
+
+        function saveExpandedFolders() {
+            if (!rememberExpandedFoldersEnabled) {
+                return
+            }
+
+            try {
+                localStorage.setItem(
+                    EXPANDED_FOLDERS_KEY,
+                    JSON.stringify([...expandedFolderIds]),
+                )
+            }
+            catch (error) {
+                console.error(error)
+            }
+        }
+
+        function addExpandedFolder(folderId) {
+            if (!rememberExpandedFoldersEnabled) {
+                return
+            }
+
+            expandedFolderIds.add(folderId)
+            saveExpandedFolders()
+        }
+
+        function removeExpandedFolder(folderId) {
+            if (!rememberExpandedFoldersEnabled) {
+                return
+            }
+
+            expandedFolderIds.delete(folderId)
+            saveExpandedFolders()
+        }
+        const FOLDER_COLOR_MODE_KEY = settingsKeys.folderColorMode
+
+        // Accepts old boolean-string values from before this became a 3-way setting.
+        function normalizeFolderColorMode(raw) {
+            if (raw === "none" || raw === "schology" || raw === "random") {
+                return raw
+            }
+            if (raw === "true") {
+                return "random"
+            }
+            if (raw === "false") {
+                return "none"
+            }
+            return null
+        }
+
+        function getFolderColorMode() {
+            try {
+                return (
+                    normalizeFolderColorMode(
+                        localStorage.getItem(FOLDER_COLOR_MODE_KEY),
+                    ) ?? "random"
+                )
+            }
+            catch (error) {
+                console.error(error)
+                return "random"
+            }
+        }
+
+        const folderColorMode = getFolderColorMode()
+
+        const folderPalette = [
+            "#f5b942",
+            "#4f9fef",
+            "#8b7ff5",
+            "#5fbf7c",
+            "#f2716d",
+            "#4dd0c4",
+            "#e0a8f0",
+            "#f28b50",
+        ]
+
+        function colorForFolder(id) {
+            let hash = 0
+            for (const char of String(id)) {
+                hash = hash * 31 + char.charCodeAt(0) >>> 0
+            }
+            return folderPalette[hash % folderPalette.length]
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(max, Math.max(min, value))
+        }
+
+        function hashHue(str) {
+            let hash = 0
+            for (const char of String(str)) {
+                hash = hash * 31 + char.charCodeAt(0) >>> 0
+            }
+            return hash % 360
+        }
+
+        function rgbToHsl(r, g, b) {
+            r /= 255
+            g /= 255
+            b /= 255
+            const max = Math.max(r, g, b),
+                min = Math.min(r, g, b)
+            const l = (max + min) / 2
+            let h = 0,
+                s = 0
+
+            if (max !== min) {
+                const d = max - min
+                s = l > 0.5 ? d / (2 - max - min) : d / (max + min)
+                switch (max) {
+                    case r:
+                        h = (g - b) / d + (g < b ? 6 : 0)
+                        break
+                    case g:
+                        h = (b - r) / d + 2
+                        break
+                    case b:
+                        h = (r - g) / d + 4
+                        break
+                }
+                h *= 60
+            }
+
+            return { h, s: s * 100, l: l * 100 }
+        }
+
+        let colorParseEl = null
+        function parseCSSColorToRGB(colorStr) {
+            if (!colorParseEl) {
+                colorParseEl = document.createElement("div")
+                colorParseEl.style.display = "none"
+                document.body.appendChild(colorParseEl)
+            }
+
+            colorParseEl.style.color = ""
+            colorParseEl.style.color = colorStr
+            if (!colorParseEl.style.color) {
+                return null
+            }
+
+            const match = getComputedStyle(colorParseEl).color.match(/[\d.]+/g)
+            if (!match || match.length < 3) {
+                return null
+            }
+
+            const [r, g, b] = match.map(Number)
+            return { r, g, b }
+        }
+
+        function normalizeAccentColor(colorStr) {
+            const rgb = parseCSSColorToRGB(colorStr)
+            if (!rgb) {
+                return null
+            }
+
+            let { h, s, l } = rgbToHsl(rgb.r, rgb.g, rgb.b)
+
+            if (s < 12 || l < 12 || l > 95) {
+                h = hashHue(colorStr)
+                s = 75
+            }
+
+            s = clamp(s, 55, 85)
+            l = clamp(l, 55, 72)
+
+            return `hsl(${Math.round(h)}, ${Math.round(s)}%, ${Math.round(l)}%)`
+        }
+
+        function folderIconSVG(color) {
+            return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+        <path fill="${color}" d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+    </svg>`
+        }
+
+        function setMaterialIcon(iconEl, material) {
+            if (material.type !== "folder") {
+                iconEl.textContent = materialTypeIcons[material.type]
+                return
+            }
+
+            switch (folderColorMode) {
+                case "none":
+                    iconEl.innerHTML = folderIconSVG("#FFCA28")
+                    break
+                case "schology":
+                    const color = material.folderColor && normalizeAccentColor(material.folderColor) || colorForFolder(material.id)
+                    iconEl.innerHTML = folderIconSVG(color)
+                    break
+                case "random":
+                default: {
+                    const color = colorForFolder(material.id)
+                    iconEl.innerHTML = folderIconSVG(color)
+                    break
+                }
+            }
+        }
 
         function getSavedViewMode() {
             if (requestedViewMode === "tree" || requestedViewMode === "explorer") {
@@ -689,7 +944,7 @@
 
             try {
                 const saved = localStorage.getItem(VIEW_MODE_KEY)
-                return saved === "explorer" ? "explorer" : "tree"
+                return saved === "tree" ? "tree" : "explorer"
             }
             catch (error) {
                 console.error(error)
@@ -706,7 +961,7 @@
             }
         }
 
-        const SORT_MODE_KEY = "courseMaterialsSortMode"
+        const SORT_MODE_KEY = settingsKeys.sortMode
         const VALID_SORT_MODES = ["default", "name-asc", "name-desc", "type"]
 
         function getSavedSortMode() {
@@ -740,7 +995,10 @@
                     sorted.sort((a, b) => b.title.localeCompare(a.title))
                     break
                 case "type":
-                    sorted.sort((a, b) => a.type.localeCompare(b.type) || a.title.localeCompare(b.title))
+                    sorted.sort(
+                        (a, b) =>
+                            a.type.localeCompare(b.type) || a.title.localeCompare(b.title),
+                    )
                     break
                 default:
                     break
@@ -786,7 +1044,10 @@
             let currentId = folderId
 
             while (currentId && currentId !== "root") {
-                chain.unshift({ id: currentId, title: folderTitleMap.get(currentId) ?? currentId })
+                chain.unshift({
+                    id: currentId,
+                    title: folderTitleMap.get(currentId) ?? currentId,
+                })
                 currentId = folderParentMap.get(currentId)
             }
 
@@ -794,15 +1055,19 @@
         }
 
         const course = fetchRetry(`/api/section/${courseId}`)
-        const parentStructure = requestedFolderId && requestedFolderId !== "root" ? fetchRetry(`/api/parent_structure?section_id=${encodeURIComponent(courseId)}&folder_id=${encodeURIComponent(requestedFolderId)}`) : Promise.resolve({ structure: [] })
+        const parentStructure = requestedFolderId && requestedFolderId !== "root" ? fetchRetry(
+            `/api/parent_structure?section_id=${encodeURIComponent(courseId)}&folder_id=${encodeURIComponent(requestedFolderId)}`,
+        ) : Promise.resolve({ structure: [] })
         const sidebar = window.initAssignmentsSidebar({
             mountId: "assignments-sidebar",
             sectionId: courseId,
-            waitFor: course
+            waitFor: course,
         })
 
         function getCourseElements(materials, parentId) {
-            const originalOrder = new Map(materials.map((material, index) => [material, index]))
+            const originalOrder = new Map(
+                materials.map((material, index) => [material, index]),
+            )
             const sortedMaterials = sortMaterials(materials, sortMode)
 
             const materialsList = document.createElement("ul")
@@ -820,12 +1085,14 @@
                 const folderToggle = materialClone.querySelector(".folder-toggle")
                 const childrenContainer = materialClone.querySelector(".children")
 
-                materialIcon.textContent = materialTypeIcons[material.type]
+                setMaterialIcon(materialIcon, material)
                 materialTitle.textContent = material.title
 
                 materialRow.dataset.title = material.title
                 materialRow.dataset.type = material.type
-                materialRow.dataset.originalIndex = String(originalOrder.get(material) ?? index)
+                materialRow.dataset.originalIndex = String(
+                    originalOrder.get(material) ?? index,
+                )
 
                 if (material.type === "folder") {
                     materialRow.dataset.folderId = material.id
@@ -840,6 +1107,7 @@
                         event.stopPropagation()
                         event.preventDefault()
                         isExpanded = !isExpanded
+                        materialRow.dataset.expanded = String(isExpanded)
 
                         folderToggle.setAttribute("aria-expanded", String(isExpanded))
                         folderToggle.classList.toggle("expanded", isExpanded)
@@ -847,6 +1115,7 @@
                         if (isExpanded) {
                             treeCurrentPath = buildPathFromFolderId(material.id)
                             childrenContainer.style.display = "block"
+                            addExpandedFolder(material.id)
 
                             if (!isLoading) {
                                 const loadingTextElement = document.createElement("li")
@@ -856,7 +1125,7 @@
 
                                 isLoading = true
                                 const folderData = await fetchRetry(
-                                    `/api/section/${courseId}/folder/${material.id}`
+                                    `/api/section/${courseId}/folder/${material.id}`,
                                 )
                                 folderCache.set(material.id, folderData.materials)
 
@@ -868,13 +1137,17 @@
                                     childrenContainer.appendChild(emptyFolderText)
                                 }
                                 else {
-                                    const folderElements = getCourseElements(folderData.materials, material.id)
+                                    const folderElements = getCourseElements(
+                                        folderData.materials,
+                                        material.id,
+                                    )
                                     childrenContainer.appendChild(folderElements)
                                 }
                             }
                         }
                         else {
                             childrenContainer.style.display = "none"
+                            removeExpandedFolder(material.id)
                         }
                     })
                 }
@@ -901,9 +1174,15 @@
                 case "name-desc":
                     return titleB.localeCompare(titleA)
                 case "type":
-                    return (rowA?.dataset.type ?? "").localeCompare(rowB?.dataset.type ?? "") || titleA.localeCompare(titleB)
+                    return (
+                        (rowA?.dataset.type ?? "").localeCompare(
+                            rowB?.dataset.type ?? "",
+                        ) || titleA.localeCompare(titleB)
+                    )
                 default:
-                    return Number(rowA?.dataset.originalIndex ?? 0) - Number(rowB?.dataset.originalIndex ?? 0)
+                    return (
+                        Number(rowA?.dataset.originalIndex ?? 0) - Number(rowB?.dataset.originalIndex ?? 0)
+                    )
             }
         }
 
@@ -912,20 +1191,26 @@
                 return
             }
 
-            const items = Array.from(listEl.children).filter((child) => child.classList.contains("material-item"))
+            const items = Array.from(listEl.children).filter((child) =>
+                child.classList.contains("material-item"),
+            )
             items.sort(compareTreeRows)
             items.forEach((item) => listEl.appendChild(item))
 
             items.forEach((item) => {
                 const childrenContainer = item.querySelector(":scope > .children")
-                const childList = childrenContainer?.querySelector(":scope > .materials-list")
+                const childList = childrenContainer?.querySelector(
+                    ":scope > .materials-list",
+                )
                 resortMaterialsList(childList)
             })
         }
 
         function resortTree() {
             const rootFolderContainer = document.getElementById("root-folder")
-            resortMaterialsList(rootFolderContainer.querySelector(":scope > .materials-list"))
+            resortMaterialsList(
+                rootFolderContainer.querySelector(":scope > .materials-list"),
+            )
         }
 
         async function syncTreeToPath(path) {
@@ -941,7 +1226,9 @@
                     continue
                 }
 
-                const folderRow = folderContainer.querySelector(`[data-folder-id="${crumb.id}"]`)
+                const folderRow = folderContainer.querySelector(
+                    `[data-folder-id="${crumb.id}"]`,
+                )
                 if (!folderRow) {
                     break
                 }
@@ -953,11 +1240,37 @@
 
             const targetId = path[path.length - 1]?.id
             if (targetId && targetId !== "root") {
-                rootFolderContainer.querySelector(`[data-folder-id="${targetId}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" })
+                //rootFolderContainer.querySelector(`[data-folder-id="${targetId}"]`)?.scrollIntoView({ behavior: "smooth", block: "center" })
             }
         }
 
-        async function getFolderMaterials(folderId, { forceRefresh = false } = {}) {
+        async function restoreExpandedFolders(folderIds) {
+            for (const folderId of folderIds) {
+                try {
+                    const structureResponse = await fetchRetry(
+                        `/api/parent_structure?section_id=${encodeURIComponent(courseId)}&folder_id=${encodeURIComponent(folderId)}`,
+                    )
+
+                    const path = [{ id: "root", title: "Course Materials" }]
+                    for (const folder of structureResponse.structure) {
+                        path.push({
+                            id: getStructureFolderId(folder),
+                            title: folder.title,
+                        })
+                    }
+
+                    await syncTreeToPath(path)
+                }
+                catch (error) {
+                    console.error(error)
+                }
+            }
+        }
+
+        async function getFolderMaterials(
+            folderId,
+            { forceRefresh = false } = {},
+        ) {
             if (folderId === "root") {
                 if (forceRefresh) {
                     const courseData = await fetchRetry(`/api/section/${courseId}`)
@@ -970,13 +1283,15 @@
                 return folderCache.get(folderId)
             }
 
-            const folderData = await fetchRetry(`/api/section/${courseId}/folder/${folderId}`)
+            const folderData = await fetchRetry(
+                `/api/section/${courseId}/folder/${folderId}`,
+            )
             folderCache.set(folderId, folderData.materials)
             return folderData.materials
         }
 
         async function expandFolderRow(folderRow) {
-            if (folderRow.getAttribute("aria-expanded") !== "true") {
+            if (folderRow.dataset.expanded !== "true") {
                 folderRow.click()
                 while (folderRow.nextElementSibling.querySelector(".loading")) {
                     await new Promise((resolve) => setTimeout(resolve, 0))
@@ -1142,7 +1457,10 @@
             loadingEl.textContent = "Loading contents..."
             container.appendChild(loadingEl)
 
-            const materials = sortMaterials(await getFolderMaterials(currentFolder.id), sortMode)
+            const materials = sortMaterials(
+                await getFolderMaterials(currentFolder.id),
+                sortMode,
+            )
             loadingEl.remove()
 
             if (!materials.length) {
@@ -1165,7 +1483,7 @@
 
                 const icon = document.createElement("div")
                 icon.classList.add("material-icon")
-                icon.textContent = materialTypeIcons[material.type]
+                setMaterialIcon(icon, material)
 
                 const title = document.createElement("div")
                 title.classList.add("material-title")
@@ -1177,7 +1495,10 @@
                 if (material.type === "folder") {
                     row.addEventListener("click", (event) => {
                         event.preventDefault()
-                        navigateExplorerTo([...explorerPath, { id: material.id, title: material.title }])
+                        navigateExplorerTo([
+                            ...explorerPath,
+                            { id: material.id, title: material.title },
+                        ])
                     })
                 }
                 else {
@@ -1194,18 +1515,7 @@
         function setViewMode(mode, options = {}) {
             const { persist = true, skipRender = false } = options
 
-            const previousMode = viewMode
             viewMode = mode
-
-            if (!skipRender && mode !== previousMode) {
-                if (mode === "explorer") {
-                    resetExplorerHistory(treeCurrentPath.slice())
-                }
-                else if (mode === "tree") {
-                    treeCurrentPath = explorerPath.slice()
-                    syncTreeToPath(explorerPath)
-                }
-            }
 
             if (persist) {
                 saveViewMode(mode)
@@ -1213,10 +1523,16 @@
                 updateCourseUrl(currentPath[currentPath.length - 1].id, mode)
             }
 
-            document.getElementById("tree-view-btn").classList.toggle("active", mode === "tree")
-            document.getElementById("explorer-view-btn").classList.toggle("active", mode === "explorer")
+            document
+                .getElementById("tree-view-btn")
+                .classList.toggle("active", mode === "tree")
+            document
+                .getElementById("explorer-view-btn")
+                .classList.toggle("active", mode === "explorer")
 
-            document.querySelector(".page").classList.toggle("explorer-mode", mode === "explorer")
+            document
+                .querySelector(".page")
+                .classList.toggle("explorer-mode", mode === "explorer")
 
             document.getElementById("root-folder").style.display = mode === "tree" ? "block" : "none"
             document.getElementById("explorer-view").style.display = mode === "explorer" ? "grid" : "none"
@@ -1228,14 +1544,18 @@
 
         setViewMode(viewMode, { persist: false, skipRender: true })
 
-        document.getElementById("tree-view-btn").addEventListener("click", () => setViewMode("tree"))
-        document.getElementById("explorer-view-btn").addEventListener("click", () => setViewMode("explorer"))
+        document
+            .getElementById("tree-view-btn")
+            .addEventListener("click", () => setViewMode("tree"))
+        document
+            .getElementById("explorer-view-btn")
+            .addEventListener("click", () => setViewMode("explorer"))
 
         const sortLabels = {
-            "default": "Sort: Default",
+            default: "Sort: Default",
             "name-asc": "Name (A–Z)",
             "name-desc": "Name (Z–A)",
-            "type": "Type"
+            type: "Type",
         }
 
         const sortDropdown = document.getElementById("sort-dropdown")
@@ -1263,11 +1583,13 @@
             sortMode = mode
             sortSelectLabel.textContent = sortLabels[mode] ?? sortLabels.default
 
-            sortSelectMenu.querySelectorAll(".sort-select-option").forEach((option) => {
-                const isSelected = option.dataset.value === mode
-                option.classList.toggle("selected", isSelected)
-                option.setAttribute("aria-selected", String(isSelected))
-            })
+            sortSelectMenu
+                .querySelectorAll(".sort-select-option")
+                .forEach((option) => {
+                    const isSelected = option.dataset.value === mode
+                    option.classList.toggle("selected", isSelected)
+                    option.setAttribute("aria-selected", String(isSelected))
+                })
 
             if (persist) {
                 saveSortMode(mode)
@@ -1288,12 +1610,14 @@
             isSortMenuOpen() ? closeSortMenu() : openSortMenu()
         })
 
-        sortSelectMenu.querySelectorAll(".sort-select-option").forEach((option) => {
-            option.addEventListener("click", () => {
-                setSortMode(option.dataset.value)
-                closeSortMenu()
+        sortSelectMenu
+            .querySelectorAll(".sort-select-option")
+            .forEach((option) => {
+                option.addEventListener("click", () => {
+                    setSortMode(option.dataset.value)
+                    closeSortMenu()
+                })
             })
-        })
 
         document.addEventListener("click", (event) => {
             if (isSortMenuOpen() && !sortDropdown.contains(event.target)) {
@@ -1328,18 +1652,20 @@
             const [, courseData, structureResponse] = await Promise.all([
                 sidebar.ready,
                 course,
-                parentStructure
+                parentStructure,
             ])
             rootMaterials = courseData.materials
 
             const rootFolderContainer = document.getElementById("root-folder")
-            rootFolderContainer.appendChild(getCourseElements(courseData.materials, "root"))
+            rootFolderContainer.appendChild(
+                getCourseElements(courseData.materials, "root"),
+            )
 
             const initialPath = [{ id: "root", title: "Course Materials" }]
             for (const folder of structureResponse.structure) {
                 initialPath.push({
                     id: getStructureFolderId(folder),
-                    title: folder.title
+                    title: folder.title,
                 })
             }
 
@@ -1349,8 +1675,17 @@
                 resetExplorerHistory(initialPath)
                 renderExplorer()
             }
-            else if (requestedFolderId) {
-                await syncTreeToPath(initialPath)
+            else {
+                if (requestedFolderId) {
+                    await syncTreeToPath(initialPath)
+                }
+
+                if (rememberExpandedFoldersEnabled && expandedFolderIds.size) {
+                    const remainingFolderIds = [...expandedFolderIds].filter(
+                        (id) => id !== requestedFolderId,
+                    )
+                    await restoreExpandedFolders(remainingFolderIds)
+                }
             }
         }
 
@@ -1361,7 +1696,9 @@
             const subjectEl = document.getElementById("course-subject")
 
             try {
-                const data = await fetchRetry(`/api/section_details/${encodeURIComponent(courseId)}`)
+                const data = await fetchRetry(
+                    `/api/section_details/${encodeURIComponent(courseId)}`,
+                )
 
                 if (data.status !== "ok" || !data.section) {
                     throw new Error(data.message ?? "Section not found")
@@ -1394,7 +1731,7 @@
                 <div class="material-title"></div>
             </a>
 
-            <ul class="children" style="display:none;"></ul>
+            <ul class="children" style="display: none"></ul>
         </li>
     </template>
 </body>

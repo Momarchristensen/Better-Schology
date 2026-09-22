@@ -1,116 +1,413 @@
 # Better Schology
 
-Better Schology is a lightweight Schoology-style course dashboard with a FastAPI backend and a static HTML frontend. It provides course browsing, assignment search, material viewing, document conversion, and assignment submissions through a local web app.
+Better Schology is a lightweight, local Schoology-style course dashboard built with a FastAPI backend and a static HTML frontend.
+
+It provides course browsing, assignment tracking, material viewing, document conversion, and assignment submissions through a local web app.
+
+> **Disclaimer:** Better Schology is an independent project and is not affiliated with, endorsed by, or sponsored by Schoology or PowerSchool.
 
 ## Features
 
-- Schoology account login through the app's authentication flow
-- Course and section browsing
-- Assignment search and upcoming/overdue work views
-- Material viewing through a local file proxy
-- DOCX to HTML conversion
-- PPT/PPTX to PDF conversion through the bundled LibreOffice runtime
-- Written and file-based assignment submissions
-- Draft saving for written submissions
+* Schoology account login through the app's authentication flow
+* Course and section browsing
+* Assignment search
+* Upcoming and overdue assignment views
+* Material viewing through a local file proxy
+* DOCX to HTML conversion
+* PPT/PPTX to PDF conversion through the bundled LibreOffice runtime
+* Written assignment submissions
+* File-based assignment submissions
+* Draft saving for written submissions
+* Local caching of downloaded files
+* Packaged Windows executable
+
+## Preview
+
+<!-- Add a screenshot here, for example: -->
+
+<!-- ![Better Schology dashboard](docs/preview.png) -->
+
+## Quick Start
+
+### Windows Executable
+
+The packaged Windows version does **not** require Python or Node.js.
+
+1. Open the project's GitHub repository.
+2. Select **Releases**.
+3. Open the newest release.
+4. Download `Better-Schology.exe` from the **Assets** section.
+5. Place the executable in a folder where you want to keep the application.
+6. Run `Better-Schology.exe`.
+7. Open `http://localhost:3498` if the browser does not open automatically.
+8. Sign in with your Schoology account.
+
+Keep the executable running while using Better Schology. Closing its console window stops the local server.
+
+> **Important:** Download the executable from the project's **Releases** page rather than from the repository's **Code** menu.
+
+### Windows Security Warning
+
+Windows may display a security warning when running the executable, particularly if the executable is not signed or is not yet recognized by Windows.
+
+If this happens, verify that you obtained the executable from the expected project release before choosing to continue.
 
 ## Requirements
 
-- Windows
-- Python 3.10 or newer
-- Node.js and npm for linting
-- A Schoology account supported by the configured login flow
+### Windows Executable
 
-The project expects LibreOffice at `libreoffice/program/soffice.exe`. Keep that directory available when using PowerPoint conversion.
+No additional software is required to run the packaged executable.
 
-## Schoology Server Configuration
+### Running from Source
 
-The default Schoology server is `https://ca-net.schoology.com`. To use another Schoology server, edit the generated `config.json` file beside `server.py` when running Python, or at `%APPDATA%\Better-Schology\config.json` when using the packaged Windows executable:
+* Windows
+* Python 3.10 or newer
+* Node.js and npm
+* A Schoology account supported by the configured login flow
+
+PowerPoint conversion also requires the bundled LibreOffice runtime.
+
+The project expects LibreOffice to be available at:
+
+```text
+libreoffice/program/soffice.exe
+```
+
+Keep the `libreoffice/` directory available when using PowerPoint conversion.
+
+## Configuration
+
+Better Schology creates a `config.json` file automatically the first time it starts.
+
+The location depends on how the application is being run:
+
+| Installation        | Configuration file                      |
+| ------------------- | --------------------------------------- |
+| Running from Python | Beside `server.py`                      |
+| Windows executable  | `%APPDATA%\Better-Schology\config.json` |
+
+### Schoology Server
+
+The default Schoology server is:
+
+```text
+https://ca-net.schoology.com
+```
+
+To use a different Schoology server, edit `config.json`:
 
 ```json
 {
-	"schoology_base_url": "https://your-schoology-server.example.com"
+  "schoology_base_url": "https://your-schoology-server.example.com"
 }
 ```
 
-You can copy [config.example.json](config.example.json) as a starting point. The URL must use HTTPS and must not include a query string or fragment. Restart the app after changing the file. The configured server must support the same Schoology API and login flow.
+You can copy `config.example.json` as a starting point.
 
-## Using the Windows Executable
+The configured URL must:
 
-You do not need Python or Node.js to use the packaged Windows version.
+* Use HTTPS
+* Not contain a query string
+* Not contain a URL fragment
+* Point to a Schoology server compatible with the application's API and login flow
 
-1. Open the project's GitHub page in your browser.
-2. Select **Releases** on the right side of the page. Do not download the files listed under the repository's regular **Code** menu.
-3. Open the newest release and download `Better-Schology.exe` from the **Assets** section.
-4. Move the downloaded file to a folder where you want to keep the app. Do not run it from inside the browser's download preview.
-5. Double-click `Better-Schology.exe`. If Windows displays a security warning, select **More info**, confirm that the publisher is expected, and choose **Run anyway**.
-6. Open `http://localhost:3498` in a browser if it does not open automatically.
-7. Sign in with your Schoology account.
+Restart Better Schology after changing the configuration.
 
-Keep the executable running while using the app. Close its console window to stop the local server. Your downloaded-file cache is stored separately in `%TEMP%\Better-Schology\cached_files`.
+### Example Configuration
 
-To use a different Schoology server, start the executable once, edit `%APPDATA%\Better-Schology\config.json`, and restart the executable. The file is created automatically the first time the app starts.
+```json
+{
+  "schoology_base_url": "https://your-schoology-server.example.com"
+}
+```
 
-## Setup
+## Running from Source
 
-Create and activate a virtual environment:
+### 1. Create a Virtual Environment
+
+Open PowerShell in the project directory:
 
 ```powershell
 py -m venv .venv
+```
+
+Activate the virtual environment:
+
+```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install the Python dependencies:
+### 2. Install Python Dependencies
 
 ```powershell
 python -m pip install -r requirements.txt
 ```
 
-Install the frontend linting dependencies:
+### 3. Install Frontend Dependencies
+
+Node.js and npm are required for frontend linting.
 
 ```powershell
 npm install
 ```
 
-## Run
-
-Start the local server:
+### 4. Start the Server
 
 ```powershell
 python server.py
 ```
 
-Open [http://localhost:3498](http://localhost:3498) in a browser.
+Then open:
 
-The server uses an HTTP-only session cookie for the authenticated session. Generated downloaded-file data is stored in `cached_files/` and is ignored by Git. When running from Python, that directory is beside `server.py`. The packaged Windows executable stores it in `%TEMP%\Better-Schology\cached_files` so it is separate from the executable and persists between normal runs. Windows may remove files from its temporary directory during cleanup.
+```text
+http://localhost:3498
+```
 
-## Lint
+The application runs locally on your computer.
+
+## Data & Storage
+
+Better Schology runs its web server locally.
+
+### Authentication
+
+The server uses an HTTP-only session cookie for the authenticated session.
+
+### Downloaded Files
+
+Downloaded materials and generated file data are cached locally.
+
+When running from Python, the cache is stored beside `server.py`:
+
+```text
+cached_files/
+```
+
+When running the packaged Windows executable, the cache is stored separately from the executable:
+
+```text
+%TEMP%\Better-Schology\cached_files\
+```
+
+The packaged application's cache persists between normal runs, but Windows may remove files from its temporary directory during system cleanup.
+
+The `cached_files/` directory is ignored by Git.
+
+## Linting
+
+Install the frontend dependencies first:
+
+```powershell
+npm install
+```
+
+Run the JavaScript/HTML linting:
+
+```powershell
+npm run lint
+```
+
+Run the CSS linting:
+
+```powershell
+npm run lint:css
+```
+
+## Project Structure
+
+```text
+Better-Schology/
+├── HTML/                       # Frontend pages and static assets
+├── libreoffice/                # Bundled LibreOffice runtime
+├── cached_files/               # Generated local file cache
+├── api_utils.py                # Schoology API requests and data helpers
+├── get_token.py                # Authentication/session-token handling
+├── server.py                   # FastAPI application and route handlers
+├── config.example.json         # Example application configuration
+├── requirements.txt            # Python dependencies
+├── package.json                # Node.js/linting dependencies
+└── README.md                   # Project documentation
+```
+
+## Architecture
+
+Better Schology uses a local FastAPI server to connect the frontend with Schoology and provide additional functionality.
+
+```text
+                    ┌──────────────────┐
+                    │      Browser     │
+                    │ HTML / CSS / JS  │
+                    └────────┬─────────┘
+                             │
+                             ▼
+                    ┌──────────────────┐
+                    │   FastAPI Server │
+                    │    server.py     │
+                    └────────┬─────────┘
+                             │
+            ┌────────────────┼────────────────┐
+            │                │                │
+            ▼                ▼                ▼
+     ┌─────────────┐  ┌─────────────┐  ┌─────────────┐
+     │  Schoology  │  │ File Cache  │  │ LibreOffice │
+     │     API     │  │             │  │ Conversion  │
+     └─────────────┘  └─────────────┘  └─────────────┘
+```
+
+The frontend is served as static HTML and assets by the FastAPI application.
+
+The backend handles authentication, Schoology API requests, file proxying, document conversion, caching, and assignment submissions.
+
+## Document Conversion
+
+Better Schology supports several document-related workflows.
+
+### DOCX
+
+DOCX documents can be converted to HTML for viewing within the application.
+
+### PPT/PPTX
+
+PowerPoint presentations can be converted to PDF using the bundled LibreOffice runtime.
+
+The expected LibreOffice executable is:
+
+```text
+libreoffice/program/soffice.exe
+```
+
+Do not remove or move the `libreoffice/` directory while using presentation conversion.
+
+## Assignment Submissions
+
+Better Schology supports:
+
+* Written assignment submissions
+* File-based submissions
+* Saving drafts for written submissions
+
+Drafts can be saved before the final submission is made.
+
+## Troubleshooting
+
+### The browser does not open automatically
+
+Start Better Schology and manually open:
+
+```text
+http://localhost:3498
+```
+
+Make sure the Better Schology executable or Python server is still running.
+
+### The local website does not load
+
+Check that the server is running and that port `3498` is not already being used by another application.
+
+When running from source, start the server with:
+
+```powershell
+python server.py
+```
+
+### PowerPoint conversion does not work
+
+Verify that this file exists:
+
+```text
+libreoffice/program/soffice.exe
+```
+
+The complete `libreoffice/` directory must remain available to the application.
+
+### The Schoology login does not work
+
+Check that:
+
+1. Your Schoology account is supported by the configured login flow.
+2. The configured Schoology server is correct.
+3. `schoology_base_url` uses HTTPS.
+4. The application has been restarted after changing `config.json`.
+
+### I changed the Schoology server but the old server is still being used
+
+Make sure you edited the correct configuration file.
+
+For the Python version:
+
+```text
+<project directory>\config.json
+```
+
+For the packaged executable:
+
+```text
+%APPDATA%\Better-Schology\config.json
+```
+
+Restart Better Schology after making the change.
+
+### Windows deleted cached files
+
+The packaged version stores cached files under:
+
+```text
+%TEMP%\Better-Schology\cached_files\
+```
+
+Because this is a Windows temporary directory, Windows may periodically remove its contents.
+
+## Development
+
+The project contains both Python backend code and frontend assets.
+
+### Backend
+
+The backend is built with FastAPI and handles:
+
+* Schoology API communication
+* Authentication
+* Session handling
+* File proxying
+* File caching
+* Document conversion
+* Assignment submissions
+
+### Frontend
+
+The frontend is made from static HTML, CSS, and JavaScript.
+
+Node.js and npm are used for linting and frontend development tooling.
+
+## Contributing
+
+Contributions, bug reports, and suggestions are welcome.
+
+Before submitting changes, make sure the relevant linting commands pass:
 
 ```powershell
 npm run lint
 npm run lint:css
 ```
 
-## Project Layout
+For bugs, include enough information to reproduce the problem, such as:
 
-- `server.py` - FastAPI application and route handlers
-- `requirements.txt` - Python dependencies
-- `api_utils.py` - Schoology API requests and data helpers
-- `get_token.py` - authentication/session-token handling
-- `HTML/` - frontend pages and static assets
-- `libreoffice/` - bundled runtime used for presentation conversion
-- `cached_files/` - generated local file cache for Python runs; packaged executable caches use `%TEMP%\Better-Schology\cached_files`
+* What you were trying to do
+* What happened
+* What you expected to happen
+* Relevant error messages
+* Whether you were using the Python version or Windows executable
 
-## Project Name Ideas
+Do not include passwords, session tokens, authentication cookies, or other private account information in bug reports.
 
-- CourseNest
-- ClassPort
-- StudyDock
-- SchoolFlow
-- CampusDesk
-- CourseOrbit
-- LessonLane
-- Classboard
-- ScholarHub
-- Assignment Atlas
+## Disclaimer
 
-Better Schology is the project name; `CourseNest`, `StudyDock`, and `Classboard` remain alternative names for a friendly, focused dashboard.
+Better Schology is an independent project.
+
+It is not affiliated with, endorsed by, or sponsored by Schoology or PowerSchool.
+
+Users are responsible for complying with the policies and terms applicable to their Schoology account and institution.
+
+## License
+
+This project is licensed under the terms specified in the repository's `LICENSE` file.

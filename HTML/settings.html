@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" href="/logo.svg">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/logo.svg" />
     <title>Settings</title>
-    <link rel="stylesheet" href="/app.css">
+    <link rel="stylesheet" href="/app.css" />
     <style>
         .settings-page {
             width: min(720px, 100%);
@@ -51,7 +51,7 @@
             border: 0;
         }
 
-        .settings-section + .settings-section {
+        .settings-section+.settings-section {
             padding-top: 20px;
             border-top: 1px solid var(--border);
         }
@@ -133,7 +133,9 @@
 
         .settings-button.primary {
             border-color: var(--accent);
-            background: linear-gradient(180deg, var(--accent), var(--accent-strong));
+            background: linear-gradient(180deg,
+                    var(--accent),
+                    var(--accent-strong));
             color: white;
         }
 
@@ -205,14 +207,14 @@
                         <span class="setting-label">Reduce motion</span>
                         <span class="setting-help">Minimize transitions and animated loading states.</span>
                     </span>
-                    <input id="reduced-motion" class="setting-checkbox" type="checkbox">
+                    <input id="reduced-motion" class="setting-checkbox" type="checkbox" />
                 </label>
                 <label class="setting-row">
                     <span class="setting-copy">
                         <span class="setting-label">Show assignments</span>
                         <span class="setting-help">Show the overdue and upcoming panel on supported pages.</span>
                     </span>
-                    <input id="show-assignments" class="setting-checkbox" type="checkbox">
+                    <input id="show-assignments" class="setting-checkbox" type="checkbox" />
                 </label>
             </fieldset>
 
@@ -240,33 +242,47 @@
                         <option value="type">Type</option>
                     </select>
                 </label>
+                <label class="setting-row" for="folder-color-mode">
+                    <span class="setting-copy">
+                        <span class="setting-label">Folder colors</span>
+                        <span class="setting-help">Choose how folder icons are colored in course materials.</span>
+                    </span>
+                    <select id="folder-color-mode">
+                        <option value="none">No color</option>
+                        <option value="schology">Schology color</option>
+                        <option value="random">Random color</option>
+                    </select>
+                </label>
+                <label class="setting-row">
+                    <span class="setting-copy">
+                        <span class="setting-label">Remember expanded folders</span>
+                        <span class="setting-help">Reopen the folders you had expanded in tree view when you come
+                            back.</span>
+                    </span>
+                    <input id="remember-expanded-folders" class="setting-checkbox" type="checkbox" />
+                </label>
             </fieldset>
 
             <div class="settings-actions">
-                <button id="reset-button" class="settings-button" type="button">Reset defaults</button>
-                <button class="settings-button primary" type="submit">Save settings</button>
+                <button id="reset-button" class="settings-button" type="button">
+                    Reset defaults
+                </button>
+                <button class="settings-button primary" type="submit">
+                    Save settings
+                </button>
             </div>
         </form>
     </main>
 
     <script>
-        const settingsKeys = {
-            reducedMotion: "schologyReducedMotion",
-            showAssignments: "schologyShowAssignments",
-            viewMode: "courseMaterialsViewMode",
-            sortMode: "courseMaterialsSortMode"
-        }
-
-        const defaults = {
-            reducedMotion: false,
-            showAssignments: true,
-            viewMode: "tree",
-            sortMode: "default"
-        }
+        const settingsKeys = window.SETTINGS_KEYS
+        const defaults = window.DEFAULT_SETTINGS
 
         const form = document.getElementById("settings-form")
         const returnLink = document.getElementById("return-link")
-        const returnPath = new URLSearchParams(window.location.search).get("return")
+        const returnPath = new URLSearchParams(window.location.search).get(
+            "return",
+        )
         const safeReturnPath = returnPath && returnPath.startsWith("/") && !returnPath.startsWith("//") ? returnPath : "/home"
 
         returnLink.href = safeReturnPath
@@ -291,6 +307,8 @@
             document.getElementById("show-assignments").checked = readSetting(settingsKeys.showAssignments, String(defaults.showAssignments)) === "true"
             document.getElementById("view-mode").value = readSetting(settingsKeys.viewMode, defaults.viewMode)
             document.getElementById("sort-mode").value = readSetting(settingsKeys.sortMode, defaults.sortMode)
+            document.getElementById("folder-color-mode").value = readSetting(settingsKeys.folderColorMode, defaults.folderColorMode)
+            document.getElementById("remember-expanded-folders").checked = readSetting(settingsKeys.rememberExpandedFolders, String(defaults.rememberExpandedFolders)) === "true"
         }
 
         function saveSettings() {
@@ -298,6 +316,8 @@
             writeSetting(settingsKeys.showAssignments, String(document.getElementById("show-assignments").checked))
             writeSetting(settingsKeys.viewMode, document.getElementById("view-mode").value)
             writeSetting(settingsKeys.sortMode, document.getElementById("sort-mode").value)
+            writeSetting(settingsKeys.folderColorMode, document.getElementById("folder-color-mode").value)
+            writeSetting(settingsKeys.rememberExpandedFolders, String(document.getElementById("remember-expanded-folders").checked))
         }
 
         function resetSettings() {
@@ -305,6 +325,8 @@
             writeSetting(settingsKeys.showAssignments, String(defaults.showAssignments))
             writeSetting(settingsKeys.viewMode, defaults.viewMode)
             writeSetting(settingsKeys.sortMode, defaults.sortMode)
+            writeSetting(settingsKeys.folderColorMode, defaults.folderColorMode)
+            writeSetting(settingsKeys.rememberExpandedFolders, String(defaults.rememberExpandedFolders))
             loadSettings()
         }
 
@@ -314,7 +336,9 @@
             window.location.href = safeReturnPath
         })
 
-        document.getElementById("reset-button").addEventListener("click", resetSettings)
+        document
+            .getElementById("reset-button")
+            .addEventListener("click", resetSettings)
         loadSettings()
     </script>
 </body>
