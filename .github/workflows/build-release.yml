@@ -32,7 +32,7 @@ jobs:
           $version = "${{ github.ref_name }}"
           $path = "updater.py"
           $contents = Get-Content $path -Raw
-          $contents = $contents -replace '__version__ = .*', "__version__ = `\"$version`\""
+          $contents = $contents -replace '__version__ = .*', "__version__ = `"$version`""
           Set-Content $path $contents -Encoding utf8
 
       - name: Build executable
