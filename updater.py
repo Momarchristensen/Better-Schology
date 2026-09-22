@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 import shutil
 import httpx
+import certifi
 
 REPO = "Momarchristensen/Better-Schology"
 GITHUB_API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
@@ -50,7 +51,7 @@ def check_for_update(timeout: float = 5.0) -> Optional[dict]:
         data = resp.json()
     except Exception:
         try:
-            with httpx.Client(timeout=timeout, trust_env=False) as client:
+            with httpx.Client(timeout=timeout, trust_env=False, verify=certifi.where()) as client:
                 resp = client.get(
                     GITHUB_API_LATEST,
                     headers={"Accept": "application/vnd.github+json"},

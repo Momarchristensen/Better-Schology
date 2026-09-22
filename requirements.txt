@@ -7,3 +7,4 @@ pyinstaller
 python-multipart
 requests
 uvicorn
+certifi
