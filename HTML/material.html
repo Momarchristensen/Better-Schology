@@ -28,6 +28,29 @@
       margin-bottom: 18px;
     }
 
+    .material-action,
+    .attachments-zip-button {
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--surface);
+      color: var(--text-strong);
+      padding: 8px 12px;
+      cursor: pointer;
+      font: inherit;
+    }
+
+    .material-action:hover,
+    .attachments-zip-button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .attachments-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 12px;
+    }
+
     .header h2 {
       margin: 0;
       padding: 2px 4px;
@@ -168,6 +191,8 @@
     .submissions-container {
       padding: 18px;
       min-width: 0;
+      overflow: hidden;
+      box-sizing: border-box;
     }
 
     .left-content {
@@ -179,6 +204,7 @@
     .submissions {
       display: grid;
       gap: 12px;
+      min-width: 0;
     }
 
     .submission {
@@ -186,6 +212,10 @@
       border: 1px solid rgb(255, 255, 255, 9%);
       border-radius: 16px;
       padding: 14px;
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
       transition:
         transform 0.18s ease,
         background 0.18s ease,
@@ -259,7 +289,11 @@
 
     .submission-content {
       min-width: 0;
+      max-width: 100%;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
+
 
     .file-wrapper {
       display: flex;
@@ -309,7 +343,14 @@
       border-radius: 12px;
       margin-top: 8px;
       padding: 12px;
+      max-width: 100%;
+      box-sizing: border-box;
       overflow-x: auto;
+      overflow-wrap: anywhere;
+    }
+
+    .submission-viewer * {
+      max-width: 100%;
     }
 
     .submissions-row {
@@ -576,7 +617,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      z-index: 1000;
+      z-index: 1100;
       background: rgb(0, 0, 0, 82%);
       backdrop-filter: blur(6px);
       align-items: center;
@@ -638,6 +679,68 @@
       border: 0;
       border-radius: 16px;
       background: white;
+    }
+
+    video {
+      width: 100%;
+      max-height: 680px;
+      border-radius: 16px;
+      background: #000;
+    }
+
+    @media print {
+      @page {
+        margin: 1.5cm;
+      }
+
+      body,
+      .app-page {
+        background: #fff !important;
+        color: #000 !important;
+      }
+
+      .page {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+      }
+
+      .header .back-btn,
+      .header .settings-link,
+      .submission-modal-overlay,
+      .due-date-countdown,
+      .add-submission-btn,
+      .attachment-download,
+      .attachments-toolbar,
+      .pdf-controls {
+        display: none !important;
+      }
+
+      .header h2 {
+        padding: 0;
+        color: #000;
+      }
+
+      .panels,
+      .description,
+      .submissions-container,
+      .attachments-container {
+        border: 1px solid #bbb;
+        box-shadow: none;
+        background: #fff;
+        color: #000;
+        break-inside: avoid;
+      }
+
+      iframe,
+      video {
+        display: none;
+      }
+
+      a {
+        color: #000;
+        text-decoration: underline;
+      }
     }
 
     .comment {
@@ -806,6 +909,39 @@
       border-top-right-radius: 10px;
     }
 
+    .ql-toolbar.ql-snow .ql-formats button,
+    .ql-toolbar.ql-snow .ql-picker-label {
+      position: relative;
+    }
+
+    .ql-toolbar.ql-snow [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgb(15, 23, 42, 92%);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      padding: 4px 9px;
+      border-radius: 6px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
+      z-index: 40;
+      box-shadow: 0 6px 16px rgb(0, 0, 0, 35%);
+    }
+
+    .ql-toolbar.ql-snow [data-tooltip]:hover::after {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(-50%) translateY(-2px);
+    }
+
     .submission-editor-wrapper .ql-container.ql-snow {
       border: none;
       font-size: 0.98rem;
@@ -903,7 +1039,38 @@
       font-size: 0.88rem;
     }
 
+    .submission-file-thumb {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid rgb(255, 255, 255, 10%);
+      cursor: zoom-in;
+    }
+
+    .submission-file-icon {
+      flex: 0 0 auto;
+      width: 36px;
+      height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      background: rgb(255, 255, 255, 6%);
+      border: 1px solid rgb(255, 255, 255, 10%);
+      font-size: 0.62rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      color: var(--muted-panel);
+      text-align: center;
+      line-height: 1.1;
+      padding: 2px;
+      overflow: hidden;
+    }
+
     .submission-file-name {
+      flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -1105,9 +1272,11 @@
 
     const backHref = folderId && folderId !== "root" ? `/section/${sectionId}?folder=${encodeURIComponent(folderId)}` : `/section/${sectionId}`
 
-    document.getElementById("back-btn").href = backHref;
+    document.getElementById("back-btn").href = backHref
 
-    ["dragover", "drop"].forEach((eventName) => {
+
+
+    ;["dragover", "drop"].forEach((eventName) => {
       window.addEventListener(eventName, (event) => {
         event.preventDefault()
       })
@@ -1237,18 +1406,31 @@
           documentLink.textContent = linkUrl
           materialViewer.appendChild(documentLink)
 
-          const iframe = document.createElement("iframe")
-          iframe.src = linkUrl
-          iframe.loading = "lazy"
-          iframe.allow = "fullscreen"
-          materialViewer.appendChild(iframe)
+          const videoViewer = createVideoViewer(linkUrl)
+          if (videoViewer) {
+            materialViewer.appendChild(videoViewer)
+          }
+          else {
+            const iframe = document.createElement("iframe")
+            iframe.src = linkUrl
+            iframe.loading = "lazy"
+            iframe.allow = "fullscreen"
+            materialViewer.appendChild(iframe)
+          }
         }
         else if (documentType === "video") {
           const linkUrl = material.url
           const documentLink = document.createElement("a")
           documentLink.href = linkUrl
           documentLink.textContent = linkUrl
+          documentLink.target = "_blank"
+          documentLink.rel = "noopener noreferrer"
           materialViewer.appendChild(documentLink)
+
+          const videoViewer = createVideoViewer(linkUrl)
+          if (videoViewer) {
+            materialViewer.appendChild(videoViewer)
+          }
         }
       }
       else if (materialType === "page") {
@@ -1297,6 +1479,7 @@
         if (material.attachments?.length) {
           attachmentListContainer.classList.add("show")
           const attachmentsList = assignmentClone.querySelector(".attachments")
+          const fileAttachmentUrls = []
 
           for (const attachment of material.attachments) {
             const attachmentContainer = document.createElement("div")
@@ -1312,6 +1495,7 @@
               attachmentContainer.appendChild(linkElement)
             }
             else if (attachment.type === "file") {
+              fileAttachmentUrls.push(attachment.url)
               const attachmentRow = document.createElement("div")
               attachmentRow.className = "attachment-row"
 
@@ -1345,6 +1529,25 @@
             }
 
             attachmentsList.appendChild(attachmentContainer)
+          }
+
+          if (fileAttachmentUrls.length > 0) {
+            const toolbar = document.createElement("div")
+            toolbar.className = "attachments-toolbar"
+
+            const zipButton = document.createElement("button")
+            zipButton.type = "button"
+            zipButton.className = "attachments-zip-button"
+            zipButton.textContent = "Download all files as ZIP"
+            zipButton.addEventListener("click", () => {
+              const query = fileAttachmentUrls
+                .map((url) => `url=${encodeURIComponent(url)}`)
+                .join("&")
+              window.location.href = `/api/attachments.zip?${query}`
+            })
+
+            toolbar.appendChild(zipButton)
+            attachmentListContainer.appendChild(toolbar)
           }
         }
 
@@ -1527,14 +1730,70 @@
 
     loadMaterial()
 
+    function createVideoViewer(videoUrl) {
+      let parsedUrl
+      try {
+        parsedUrl = new URL(videoUrl, window.location.href)
+      }
+      catch {
+        return null
+      }
+
+      const hostname = parsedUrl.hostname.toLowerCase()
+      let embedUrl = null
+
+      if (hostname === "youtu.be") {
+        embedUrl = `https://www.youtube.com/embed/${parsedUrl.pathname.slice(1)}`
+      }
+      else if (hostname.endsWith("youtube.com")) {
+        const videoId = parsedUrl.searchParams.get("v")
+        if (videoId) {
+          embedUrl = `https://www.youtube.com/embed/${encodeURIComponent(videoId)}`
+        }
+      }
+      else if (hostname === "vimeo.com" || hostname.endsWith(".vimeo.com")) {
+        const videoId = parsedUrl.pathname.split("/").filter(Boolean).pop()
+        if (videoId && /^\d+$/.test(videoId)) {
+          embedUrl = `https://player.vimeo.com/video/${videoId}`
+        }
+      }
+
+      if (embedUrl) {
+        const iframe = document.createElement("iframe")
+        iframe.src = embedUrl
+        iframe.loading = "lazy"
+        iframe.allow = "autoplay; fullscreen; picture-in-picture"
+        iframe.allowFullscreen = true
+        iframe.title = "Embedded video"
+        return iframe
+      }
+
+      if (/\.(mp4|webm|ogg)(?:$|[?#])/i.test(parsedUrl.pathname + parsedUrl.search)) {
+        const video = document.createElement("video")
+        video.src = videoUrl
+        video.controls = true
+        video.playsInline = true
+        video.preload = "metadata"
+        return video
+      }
+
+      return null
+    }
+
     function displayFile(file, fileViewer) {
       const fileUrl = file.fileUrl
       const fileExtension = file.extension?.toLowerCase()
 
       if (file.type === "link") {
-        const documentIframe = document.createElement("iframe")
-        documentIframe.src = fileUrl
-        fileViewer.appendChild(documentIframe)
+        const videoViewer = createVideoViewer(fileUrl)
+        if (videoViewer) {
+          fileViewer.appendChild(videoViewer)
+        }
+        else {
+          const documentIframe = document.createElement("iframe")
+          documentIframe.src = fileUrl
+          fileViewer.appendChild(documentIframe)
+        }
       }
       else if (
         ["png", "jpg", "jpeg", "gif", "webp"].includes(fileExtension)
@@ -1598,7 +1857,7 @@
         pdfContainer.appendChild(documentEmbed)
         fileViewer.appendChild(pdfContainer)
       }
-      else if (["mp4"].includes(fileExtension)) {
+      else if (["mp4", "webm", "ogg"].includes(fileExtension)) {
         const documentVideo = document.createElement("video")
         documentVideo.src = `/api/file?url=${encodeURIComponent(fileUrl)}`
         documentVideo.controls = true
@@ -1867,6 +2126,34 @@
         return null
       }
     }
+    
+    const QUILL_TOOLBAR_TOOLTIPS = [
+  [".ql-bold", "Bold"],
+  [".ql-italic", "Italic"],
+  [".ql-underline", "Underline"],
+  [".ql-strike", "Strikethrough"],
+  [".ql-header[value=\"1\"]", "Heading 1"],
+  [".ql-header[value=\"2\"]", "Heading 2"],
+  [".ql-list[value=\"ordered\"]", "Numbered list"],
+  [".ql-list[value=\"bullet\"]", "Bulleted list"],
+  [".ql-blockquote", "Blockquote"],
+  [".ql-code-block", "Code block"],
+  [".ql-link", "Insert link"],
+  [".ql-clean", "Clear formatting"],
+]
+
+function addToolbarTooltips(root) {
+  const toolbar = root.querySelector(".ql-toolbar")
+  if (!toolbar) {
+    return
+  }
+  QUILL_TOOLBAR_TOOLTIPS.forEach(([selector, label]) => {
+    toolbar.querySelectorAll(selector).forEach((el) => {
+      el.setAttribute("data-tooltip", label)
+      el.setAttribute("aria-label", label)
+    })
+  })
+}
 
     function openSubmissionModal(assignmentId) {
       const modalTemplate = document.getElementById(
@@ -1984,6 +2271,7 @@
       async function closeModal() {
         window.removeEventListener("beforeunload", saveDraftOnUnload)
         await saveDraftIfNeeded()
+        revokeFilePreviews()
         quill = null
         overlay.remove()
       }
@@ -1993,11 +2281,50 @@
         closeModal()
       })
 
+
+      function isImageFile(file) {
+        return !!file.type && file.type.startsWith("image/")
+      }
+
+      function fileExtensionLabel(fileName) {
+        const match = /\.([a-z0-9]+)$/i.exec(fileName || "")
+        return match ? match[1].toUpperCase() : "FILE"
+      }
+
+      function revokeFilePreviews() {
+        selectedFiles.forEach((file) => {
+          if (file._previewUrl) {
+            URL.revokeObjectURL(file._previewUrl)
+            file._previewUrl = null
+          }
+        })
+      }
+
       function renderFileList() {
         fileListElement.innerHTML = ""
         selectedFiles.forEach((file, index) => {
           const item = document.createElement("div")
           item.className = "submission-file-item"
+
+          if (isImageFile(file)) {
+            if (!file._previewUrl) {
+              file._previewUrl = URL.createObjectURL(file)
+            }
+            const thumb = document.createElement("img")
+            thumb.className = "submission-file-thumb"
+            thumb.src = file._previewUrl
+            thumb.alt = file.name
+            thumb.addEventListener("click", () =>
+              openLightbox(file._previewUrl, file.name),
+            )
+            item.appendChild(thumb)
+          }
+          else {
+            const icon = document.createElement("span")
+            icon.className = "submission-file-icon"
+            icon.textContent = fileExtensionLabel(file.name)
+            item.appendChild(icon)
+          }
 
           const name = document.createElement("span")
           name.className = "submission-file-name"
@@ -2009,6 +2336,9 @@
           removeButton.textContent = "\u2715"
           removeButton.title = "Remove"
           removeButton.addEventListener("click", () => {
+            if (file._previewUrl) {
+              URL.revokeObjectURL(file._previewUrl)
+            }
             selectedFiles.splice(index, 1)
             renderFileList()
           })
@@ -2092,7 +2422,7 @@
         .then(() => {
           quill = new Quill(editorElement, {
             theme: "snow",
-            placeholder: "Loading draft...",
+            placeholder: "Checking for saved draft...",
             bounds: editorWrapper,
             modules: {
               toolbar: [
@@ -2104,6 +2434,8 @@
               ],
             },
           })
+
+          addToolbarTooltips(editorWrapper)
 
           return draftPromise
         })
@@ -2171,6 +2503,7 @@
           }
 
           window.removeEventListener("beforeunload", saveDraftOnUnload)
+          revokeFilePreviews()
           quill = null
           overlay.remove()
           await loadMaterial()

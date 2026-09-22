@@ -18,6 +18,7 @@ import os
 from urllib.parse import quote, urlparse, unquote_plus
 from starlette.background import BackgroundTask
 import io
+import zipfile
 import mammoth
 import sys
 import tempfile
@@ -444,6 +445,52 @@ async def api_file(url: str, request: Request):
     )
 
 
+@app.get("/api/attachments.zip")
+async def api_attachments_zip(request: Request):
+    cookie = request.cookies.get("sessionToken")
+    token = parse_session_cookie(cookie)
+
+    if not token:
+        raise HTTPException(status_code=401, detail="No session token")
+
+    urls = request.query_params.getlist("url")
+    if not urls:
+        raise HTTPException(status_code=400, detail="No attachment URLs")
+
+    archive = io.BytesIO()
+    used_names = set()
+
+    async with httpx.AsyncClient(
+        http2=True, verify=False, follow_redirects=True, trust_env=False
+    ) as client:
+        client.cookies.update(token)
+
+        with zipfile.ZipFile(archive, "w", zipfile.ZIP_DEFLATED) as zip_file:
+            for index, url in enumerate(urls, start=1):
+                response = await client.get(url)
+                if response.status_code >= 400:
+                    raise HTTPException(status_code=400, detail="Failed to fetch attachment")
+
+                filename = extract_filename(url, response.headers) or f"attachment-{index}"
+                filename = Path(filename).name or f"attachment-{index}"
+                stem = Path(filename).stem
+                suffix = Path(filename).suffix
+                candidate = filename
+                duplicate = 2
+                while candidate.lower() in used_names:
+                    candidate = f"{stem} ({duplicate}){suffix}"
+                    duplicate += 1
+                used_names.add(candidate.lower())
+                zip_file.writestr(candidate, response.content)
+
+    archive.seek(0)
+    return StreamingResponse(
+        archive,
+        media_type="application/zip",
+        headers={"Content-Disposition": 'attachment; filename="attachments.zip"'},
+    )
+
+
 @app.get("/api/courses")
 async def api_courses(request: Request):
     cookie = request.cookies.get("sessionToken")
@@ -550,6 +597,9 @@ async def api_submit_assignment(request: Request):
         return {"status": "error", "message": "Missing assignment_id"}
 
     draft_revision_id = form.get("draft_revision_id") or None
+    if draft_revision_id == "null":
+        draft_revision_id = None
+
     html = form.get("html")
     comment = form.get("comment") or ""
     uploads = form.getlist("files")
