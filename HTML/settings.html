@@ -216,6 +216,17 @@
                     </span>
                     <input id="show-assignments" class="setting-checkbox" type="checkbox" />
                 </label>
+                <label class="setting-row" for="due-date-display">
+                    <span class="setting-copy">
+                        <span class="setting-label">Upcoming due dates</span>
+                        <span class="setting-help">Show upcoming due dates as a weekday, like "Monday", or as a
+                            plain date.</span>
+                    </span>
+                    <select id="due-date-display">
+                        <option value="relative">Weekday (e.g. Monday)</option>
+                        <option value="date">Date</option>
+                    </select>
+                </label>
             </fieldset>
 
             <fieldset class="settings-section">
@@ -305,6 +316,7 @@
         function loadSettings() {
             document.getElementById("reduced-motion").checked = readSetting(settingsKeys.reducedMotion, String(defaults.reducedMotion)) === "true"
             document.getElementById("show-assignments").checked = readSetting(settingsKeys.showAssignments, String(defaults.showAssignments)) === "true"
+            document.getElementById("due-date-display").value = readSetting(settingsKeys.dueDateDisplay, defaults.dueDateDisplay)
             document.getElementById("view-mode").value = readSetting(settingsKeys.viewMode, defaults.viewMode)
             document.getElementById("sort-mode").value = readSetting(settingsKeys.sortMode, defaults.sortMode)
             document.getElementById("folder-color-mode").value = readSetting(settingsKeys.folderColorMode, defaults.folderColorMode)
@@ -314,6 +326,7 @@
         function saveSettings() {
             writeSetting(settingsKeys.reducedMotion, String(document.getElementById("reduced-motion").checked))
             writeSetting(settingsKeys.showAssignments, String(document.getElementById("show-assignments").checked))
+            writeSetting(settingsKeys.dueDateDisplay, document.getElementById("due-date-display").value)
             writeSetting(settingsKeys.viewMode, document.getElementById("view-mode").value)
             writeSetting(settingsKeys.sortMode, document.getElementById("sort-mode").value)
             writeSetting(settingsKeys.folderColorMode, document.getElementById("folder-color-mode").value)
@@ -323,6 +336,7 @@
         function resetSettings() {
             writeSetting(settingsKeys.reducedMotion, String(defaults.reducedMotion))
             writeSetting(settingsKeys.showAssignments, String(defaults.showAssignments))
+            writeSetting(settingsKeys.dueDateDisplay, defaults.dueDateDisplay)
             writeSetting(settingsKeys.viewMode, defaults.viewMode)
             writeSetting(settingsKeys.sortMode, defaults.sortMode)
             writeSetting(settingsKeys.folderColorMode, defaults.folderColorMode)

@@ -245,6 +245,11 @@ window.initAssignmentsSidebar = function initAssignmentsSidebar(options) {
             return shortDate
         }
 
+        const dueDateDisplay = getStoredSetting(SETTINGS_KEYS.dueDateDisplay, DEFAULT_SETTINGS.dueDateDisplay)
+        if (dueDateDisplay === "date") {
+            return shortDate
+        }
+
         const hour = dueDate.getHours()
 
 

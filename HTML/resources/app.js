@@ -6,6 +6,7 @@ const SETTINGS_KEYS = {
     folderColorMode: "folderColorMode",
     rememberExpandedFolders: "rememberExpanded",
     expandedFolders: "expandedFolders",
+    dueDateDisplay: "dueDateDisplay",
 }
 
 const DEFAULT_SETTINGS = {
@@ -14,7 +15,8 @@ const DEFAULT_SETTINGS = {
     viewMode: "explorer",
     sortMode: "default",
     folderColorMode: "random",
-    rememberExpandedFolders: false
+    rememberExpandedFolders: false,
+    dueDateDisplay: "relative"
 }
 
 window.DEFAULT_SETTINGS = DEFAULT_SETTINGS
