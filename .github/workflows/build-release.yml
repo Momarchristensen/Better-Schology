@@ -26,19 +26,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set version from tag
-        shell: pwsh
-        run: |
-          $version = "${{ github.ref_name }}" -replace '^v', ''
-          (Get-Content updater.py) -replace '__version__ = ".*"', "__version__ = `"$version`"" | Set-Content updater.py
-
       - name: Build executable
+        env:
+          BETTER_SCHOLOGY_VERSION: ${{ github.ref_name }}
         run: |
-          pyinstaller --onefile --name Better-Schology `
+          pyinstaller --onefile --clean --name Better-Schology `
             --collect-all lxml `
             --hidden-import updater `
             --add-data "HTML;HTML" `
             --add-data "libreoffice;libreoffice" `
+            --add-binary "dist\update.exe;." `
             server.py
 
       - name: Create GitHub Release

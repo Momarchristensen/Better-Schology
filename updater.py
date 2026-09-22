@@ -4,14 +4,16 @@ import tempfile
 import subprocess
 from pathlib import Path
 from typing import Optional
-
+import shutil
 import httpx
 
 REPO = "Momarchristensen/Better-Schology"
 GITHUB_API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
 
 
-__version__ = "1.0.0"
+__version__ = os.environ.get("BETTER_SCHOLOGY_VERSION", "0.0.0")
+
+print("Running version:", __version__)
 
 
 def _parse_version(v: str) -> tuple:
@@ -73,33 +75,34 @@ def download_update(download_url: str, dest_path: Path):
             for chunk in r.iter_bytes(chunk_size=1024 * 256):
                 f.write(chunk)
 
+def get_bundled_updater_path() -> Path:
+    if getattr(sys, "frozen", False):
+        base = Path(sys._MEIPASS)
+    else:
+        base = Path(__file__).parent
+    return base / "update.exe"
+
 
 def apply_update_and_restart(download_url: str):
     current_exe = Path(sys.executable).resolve()
     tmp_dir = Path(tempfile.gettempdir()) / "Better-Schology-update"
     tmp_dir.mkdir(parents=True, exist_ok=True)
-    new_exe = tmp_dir / "update.exe"
+    new_exe = tmp_dir / "new_update.exe"
 
     download_update(download_url, new_exe)
 
+    bundled_updater = get_bundled_updater_path()
+    updater_copy = tmp_dir / "update.exe"
+    shutil.copy2(bundled_updater, updater_copy)
+
     pid = os.getpid()
-    bat_path = tmp_dir / "apply_update.bat"
-    bat_contents = f"""@echo off
-:wait
-tasklist /FI "PID eq {pid}" 2>NUL | find /I "{pid}" >NUL
-if not errorlevel 1 (
-    timeout /t 1 /nobreak >NUL
-    goto wait
-)
-copy /Y "{new_exe}" "{current_exe}" >NUL
-start "" "{current_exe}"
-del "%~f0"
-"""
-    bat_path.write_text(bat_contents, encoding="utf-8")
+
+    CREATE_NEW_PROCESS_GROUP = 0x00000200
+    DETACHED_PROCESS = 0x00000008
 
     subprocess.Popen(
-        ["cmd", "/c", str(bat_path)],
-        creationflags=subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS,
+        [str(updater_copy), str(pid), str(new_exe), str(current_exe)],
+        creationflags=CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS,
         close_fds=True,
     )
 

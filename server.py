@@ -773,6 +773,9 @@ async def serve_resource(filename: str):
 
 
 if __name__ == "__main__":
-    check_for_updates()
+    try:
+        check_for_updates()
+    except Exception as exc:
+        print(f"Update check failed: {exc}", file=sys.stderr)
     print(f"Serving at http://localhost:{PORT}")
     uvicorn.run(app, host="127.0.0.1", port=PORT)
