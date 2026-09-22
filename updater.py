@@ -38,7 +38,6 @@ def find_exe_asset(assets: list) -> Optional[dict]:
             return asset
     return None
 
-
 def check_for_update(timeout: float = 5.0) -> Optional[dict]:
     try:
         resp = httpx.get(
@@ -50,7 +49,18 @@ def check_for_update(timeout: float = 5.0) -> Optional[dict]:
         resp.raise_for_status()
         data = resp.json()
     except Exception:
-        return None
+        try:
+            with httpx.Client(timeout=timeout, trust_env=False) as client:
+                resp = client.get(
+                    GITHUB_API_LATEST,
+                    headers={"Accept": "application/vnd.github+json"},
+                    follow_redirects=True,
+                )
+                resp.raise_for_status()
+                data = resp.json()
+        except Exception as e:
+            print(f"Failed to check for updates: {e}")
+            return None
 
     latest_tag = data.get("tag_name", "")
     if not latest_tag or _parse_version(latest_tag) <= _parse_version(__version__):
@@ -66,7 +76,6 @@ def check_for_update(timeout: float = 5.0) -> Optional[dict]:
         "download_url": asset["browser_download_url"],
         "size": asset.get("size", 0),
     }
-
 
 def download_update(download_url: str, dest_path: Path):
     with httpx.stream("GET", download_url, follow_redirects=True, timeout=60) as r:
