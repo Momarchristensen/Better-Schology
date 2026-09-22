@@ -46,7 +46,7 @@ from updater import check_for_updates
 
 if getattr(sys, "frozen", False):
     resource_dir = Path(getattr(sys, "_MEIPASS", Path(sys.executable).resolve().parent))
-    data_dir = Path(tempfile.gettempdir()) / "Better-Schology"
+    data_dir = Path(tempfile.gettempdir()) / "Better-Schoology"
 else:
     resource_dir = Path(__file__).resolve().parent
     data_dir = resource_dir

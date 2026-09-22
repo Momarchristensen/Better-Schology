@@ -8,30 +8,29 @@ import shutil
 import httpx
 import certifi
 
-REPO = "Momarchristensen/Better-Schology"
+REPO = "Momarchristensen/Better-Schoology"
 GITHUB_API_LATEST = f"https://api.github.com/repos/{REPO}/releases/latest"
 
 __version__ = "0.0.0"
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
-    "User-Agent": "Better-Schology-Updater",
+    "User-Agent": "Better-Schoology-Updater",
 }
 DOWNLOAD_HEADERS = {
     "Accept": "application/octet-stream",
-    "User-Agent": "Better-Schology-Updater",
+    "User-Agent": "Better-Schoology-Updater",
 }
 
 MIN_EXE_SIZE = 1 * 1024 * 1024
 MAX_EXE_SIZE = 100 * 1024 * 1024
 EXE_MAGIC = b"MZ"
-MAIN_EXE_NAME = "Better-Schology.exe"
+MAIN_EXE_NAME = "Better-Schoology.exe"
 
 print("Running version:", __version__)
 
 
 def _parse_version(v: str) -> tuple:
-    """Parse a version string like 'v1.2.3-beta' into (1, 2, 3)."""
     parts = []
     for p in v.strip().lstrip("vV").split("."):
         num = ""
@@ -67,12 +66,6 @@ def find_exe_asset(assets: list) -> Optional[dict]:
 
 
 def _get(url: str, *, timeout: float, headers: dict):
-    """
-    Single entry point for outbound GET requests. Tries the default httpx
-    client first, then falls back to an explicit certifi-verified client
-    with env trust disabled (helps on machines with broken/proxy-injected
-    CA setups).
-    """
     last_exc = None
     for client_kwargs in ({}, {"trust_env": False, "verify": certifi.where()}):
         try:
@@ -111,10 +104,6 @@ def check_for_update(timeout: float = 5.0) -> Optional[dict]:
 
 
 def _validate_exe_file(path: Path):
-    """
-    Confirm the downloaded file looks like a real Windows executable
-    before it's ever swapped in for the running app.
-    """
     size = path.stat().st_size
     if not (MIN_EXE_SIZE <= size <= MAX_EXE_SIZE):
         raise UpdateValidationError(
@@ -164,7 +153,7 @@ def apply_update_and_restart(download_url: str):
         raise RuntimeError("Updates are only supported in packaged builds.")
 
     current_exe = Path(sys.executable).resolve()
-    tmp_dir = Path(tempfile.gettempdir()) / "Better-Schology-update"
+    tmp_dir = Path(tempfile.gettempdir()) / "Better-Schoology-update"
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     new_exe = tmp_dir / "new_update.exe"
@@ -194,7 +183,6 @@ def apply_update_and_restart(download_url: str):
 
 
 def _tk_root():
-    """Create a hidden, topmost Tk root shared by all dialog helpers."""
     import tkinter as tk
 
     root = tk.Tk()
@@ -210,7 +198,7 @@ def prompt_update_dialog(release_info: dict) -> bool:
     try:
         return messagebox.askyesno(
             "Update available",
-            f"A new version ({release_info['version']}) of Better Schology is "
+            f"A new version ({release_info['version']}) of Better Schoology is "
             f"available.\nYou're running {__version__}.\n\n"
             "Download and install it now? The app will restart.",
             parent=root,

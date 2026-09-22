@@ -34,7 +34,7 @@ def main():
     new_exe = Path(sys.argv[2])
     target_exe = Path(sys.argv[3])
 
-    log_dir = Path(os.environ.get("TEMP", ".")) / "Better-Schology-update"
+    log_dir = Path(os.environ.get("TEMP", ".")) / "Better-Schoology-update"
     log_dir.mkdir(parents=True, exist_ok=True)
     logging.basicConfig(
         filename=log_dir / "updater.log",

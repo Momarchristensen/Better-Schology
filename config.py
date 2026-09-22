@@ -11,7 +11,7 @@ DEFAULT_BASE_URL = "https://ca-net.schoology.com"
 def _config_directory() -> Path:
     if getattr(sys, "frozen", False):
         app_data = Path(os.environ.get("APPDATA", Path.home() / "AppData" / "Roaming"))
-        return app_data / "Better-Schology"
+        return app_data / "Better-Schoology"
     return Path(__file__).resolve().parent
 
 

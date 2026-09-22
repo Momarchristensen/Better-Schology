@@ -781,7 +781,7 @@
         const FOLDER_COLOR_MODE_KEY = settingsKeys.folderColorMode
 
         function normalizeFolderColorMode(raw) {
-            if (raw === "none" || raw === "schology" || raw === "random") {
+            if (raw === "none" || raw === "Schoology" || raw === "random") {
                 return raw
             }
             if (raw === "true") {
@@ -949,7 +949,7 @@
                 case "none":
                     iconEl.innerHTML = folderIconSVG("#FFCA28")
                     break
-                case "schology":
+                case "Schoology":
                     const color = material.folderColor && normalizeAccentColor(material.folderColor) || colorForFolder(material.id)
                     iconEl.innerHTML = folderIconSVG(color)
                     break

@@ -37,7 +37,7 @@ jobs:
 
       - name: Build executable
         run: |
-          pyinstaller --onefile --clean --name Better-Schology `
+          pyinstaller --onefile --clean --name Better-Schoology `
             --collect-all lxml `
             --hidden-import updater `
             --add-data "HTML;HTML" `
@@ -48,5 +48,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/Better-Schology.exe
+          files: dist/Better-Schoology.exe
           generate_release_notes: true

@@ -8,7 +8,7 @@ subprocess.run(
         "pyinstaller",
         "--onefile",
         "--clean",
-        "--name", "Better-Schology",
+        "--name", "Better-Schoology",
         "--collect-all", "lxml",
         "--hidden-import", "updater",
         "--add-data", "HTML;HTML",
